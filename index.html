@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Lora&display=swap" rel="stylesheet">
+    <title>FALVORY.</title>
+    <link rel="icon" type="image/png" href="flavory-logo.png">
+    <style>
+        /* Reset default browser styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .custom-cursor {
+            width: 20px;
+            height: 20px;
+            background-color: #b22222;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none; /* Evita che blocchi il click */
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        ::selection {
+            background-color: #b22222;
+            color: #fff2f2;
+        }
+
+        body, html {
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            font-family: 'Playfair Display', serif;
+            cursor: none;
+        }
+
+        /* Navbar container */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000; /* Keeps navbar on top */
+            width: 100%;
+            background-color: #fff2f2;
+            transition: all 0.3s ease;
+        }
+
+        /* Navbar logo */
+        .navbar .logo img {
+            height: 70px;
+        }
+
+        /* Navbar links */
+        .navbar .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .navbar .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar .nav-links a:hover {
+            background-color: #dfdfdf;
+            color: #b22222;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Login button */
+        .navbar .login a {
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background-color: #b22222;
+        }
+
+        .navbar .login a:hover {
+            background-color: #a61c1c;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 18px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-wrap: wrap;
+                padding: 10px;
+            }
+
+            .navbar .nav-links {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                align-items: center;
+                margin-top: 10px;
+            }
+
+            .navbar .login {
+                margin-top: 10px;
+            }
+
+            .navbar .logo img {
+                height: 35px;
+            }
+
+            .main-title {
+                font-size: 3.5em; /* Smaller font size for mobile */
+                letter-spacing: 10px; /* Reduce letter spacing */
+            }
+
+            .subtitle {
+                font-size: 1.2em; /* Smaller font size for mobile */
+            }
+
+            .left-content, .right-content {
+                width: 100%; /* Full width on smaller screens */
+                text-align: center; /* Center align text */
+                padding-top: 20px; /* Add spacing */
+            }
+
+            .right-content {
+                padding-top: 20px; /* Adjust padding */
+            }
+
+            .content {
+                flex-direction: column; /* Stack content vertically */
+                padding: 0 10px; /* Add padding */
+            }
+
+            .cta-button {
+                margin-top: 20px; /* Adjust button margin */
+            }
+
+            .white-section1 .image-with-description {
+                flex-direction: column; /* Stack image and text vertically */
+                align-items: center; /* Center align items */
+                text-align: center; /* Center align text */
+            }
+
+            .white-section1 .image-with-description p {
+                font-size: 18px; /* Smaller font size for mobile */
+                line-height: 0; /* Adjust line height */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar .nav-links a,
+            .navbar .login a {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+
+            .navbar .logo img {
+                height: 30px;
+            }
+
+            .main-title {
+                font-size: 2.5em; /* Even smaller font size for very small screens */
+                letter-spacing: 5px; /* Reduce letter spacing */
+            }
+
+            .subtitle {
+                font-size: 1em; /* Smaller font size for very small screens */
+            }
+
+            .left-content h1, .right-content h1 {
+                font-size: 32px; /* Smaller font size for headings */
+            }
+
+            .left-content p, .right-content p {
+                font-size: 18px; /* Smaller font size for paragraphs */
+            }
+
+            .cta-button {
+                font-size: 1rem; /* Smaller button font size */
+                padding: 10px 20px; /* Adjust button padding */
+            }
+        }
+
+        .white-section, .white-section1 {
+            height: 100vh;
+            background-color: #fff2f2;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            justify-content: center;
+            padding-left: 5%;
+            font-size: 2em;
+        }
+
+        .white-section1 {
+            text-align: center;
+            display: flex;
+        }
+
+        .video-section {
+            position: relative;
+            height: 150vh; /* Adjusted to 150vh for scroll effect */
+            overflow: hidden;
+        }
+
+        .frame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+            will-change: transform;
+            pointer-events: none;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            display: flex; /* Use Flexbox to position divs side by side */
+            justify-content: space-between; /* Space out the divs */
+            align-items: center; /* Vertically center the divs */
+            height: 100vh; /* Full height of the viewport */
+            padding: 0 5%; /* Add some padding on the sides */
+        }
+
+        .left-content, .right-content {
+            width: 25%; /* Each div takes 30% of the container width */
+            opacity: 0;
+            transition: all 1s ease; /* Smoother transition */
+        }
+
+        .left-content {
+            transform: translateX(-100%); /* Start off-screen to the left */
+        }
+
+        .right-content {
+            transform: translateX(100%); /* Start off-screen to the right */
+            text-align: right;
+            padding-top: 45%;
+        }
+
+        .show {
+            opacity: 1;
+            transform: translateX(0%); /* Move to original position */
+        }
+
+        .main-title {
+            font-size: 5.5em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            margin-top: 0.5em; /* Adds space below the title */
+            color: #555;
+            font-style: italic;
+            text-align: left;
+            padding-left: 8%;
+        }
+
+        .span-red {
+            color: #b22222;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #000000;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        footer a {
+            color: #b22222;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .cta-button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: #fff;
+            background-color: #d62828;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 70%;
+        }
+
+        /* Hover effect */
+        .cta-button:hover {
+            background-color: #a61c1c;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+  <div class="custom-cursor" id="cursor"></div>
+
+    <div class="navbar">
+        <!-- Logo -->
+        <div class="logo">
+            <img src="flavory-logo.png" alt="Flavory Logo">
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#menu">What's on the Menu</a>
+            <a href="#wine">This is My Wine</a>
+        </div>
+
+        <!-- Login Button -->
+        <div class="login">
+            <a href="#login">Login</a>
+        </div>
+    </div>
+
+    <div class="white-section">
+        <h1 class="main-title" style="letter-spacing: 10px;">FLAVORY<span class="span-red">.</span></h1>
+        <p class="subtitle">Where Every Flavor Finds Its Perfect Pairing</p>
+    </div>
+
+    <div class="video-section">
+        <img id="frameImage" class="frame" src="frames/frame_0001.png" alt="Scroll Animation">
+        <div class="content">
+            <div class="left-content hidden">
+                <h1 style="line-height: 5; font-size: 42px;">L'arte del vino?</h1>
+                <p style="line-height: 2.3; font-size: 22px;">è un equilibrio tra <span class="span-red">tradizione</span>, 
+                  <span class="span-red">passione</span> e <span class="span-red">creatività</span>, capace di trasformare 
+                  semplici uve in espressioni uniche di territorio, cultura e storia. Non si tratta solo di una bevanda, ma di un racconto 
+                  fatto di profumi, sapori e tecniche tramandate nel tempo</p>      
+            </div>
+            <div class="right-content hidden">
+                <h1 style="line-height: 4; font-size: 42px;">FALVORY</h1>
+                <p style="line-height: 2.3; font-size: 22px;">è un'applicazione ideata da uno studente per semplificare l'<span class="span-red">abbinamento</span> tra span 
+                  <span class="span-red">cibo</span> e <span class="span-red">vino</span>, 
+                  offrendo consigli personalizzati basati sulle caratteristiche dei piatti e dei vini selezionati. 
+                  L'obiettivo è rendere <span class="span-red">accessibile</span> anche <span class="span-red">ai meno esperti</span> l'arte dell'abbinamento.</p>      
+            </div>
+        </div>
+    </div>
+
+    <div class="white-section1">
+        <h1 style="line-height: 2;">Scopri l'Esperienza di Flavory</h1>
+        <div class="image-with-description">
+          <p style="font-style: italic; font-size: 22px; line-height: 4;">Prova la nostra applicazione e lasciati guidare nell'arte dell'abbinamento cibo-vino. 
+            Con pochi click troverai il vino perfetto per ogni occasione.</p>
+          <a href="#your-app-link" class="cta-button">Provaci Ora</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2023 FALVORY. All rights reserved. | <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Service</a></p>
+    </footer>
+
+    <script>
+        const totalFrames = 300;
+        const framePath = index => `frames/frame_${String(index).padStart(4, '0')}.png`;
+        const frameImage = document.getElementById('frameImage');
+
+        // Preload all frames
+        const images = [];
+        let loadedImages = 0;
+
+        for (let i = 1; i <= totalFrames; i++) {
+            const img = new Image();
+            img.src = framePath(i);
+            img.onload = () => {
+                loadedImages++;
+                if (loadedImages === totalFrames) {
+                    console.log('All frames loaded');
+                }
+            };
+            images.push(img);
+        }
+
+        function updateFrame() {
+            const scrollTop = window.scrollY;
+            const maxScrollTop = document.body.scrollHeight - window.innerHeight;
+            const scrollFraction = scrollTop / maxScrollTop;
+            const frameIndex = Math.min(totalFrames - 1, Math.ceil(scrollFraction * totalFrames));
+
+            frameImage.src = framePath(frameIndex);
+
+            requestAnimationFrame(updateFrame);
+        }
+
+        requestAnimationFrame(updateFrame);
+
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                } else {
+                    entry.target.classList.remove('show');
+                }
+            });
+        });
+
+        const hiddenElements = document.querySelectorAll('.hidden');
+        hiddenElements.forEach((element) => observer.observe(element));
+    
+        const cursor = document.getElementById('cursor');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+    
+    </script>
+
+</body>
+</html>
