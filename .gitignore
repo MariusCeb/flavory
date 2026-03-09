@@ -1,0 +1,4 @@
+node_modules/
+.env
+flavory.db
+*.db-journal

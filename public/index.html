@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLAVORY. — Il tuo Sommelier AI</title>
+  <meta name="description" content="Flavory usa l'AI per consigliarti il vino perfetto in base al tuo menu, alla tua zona e dove vuoi acquistarlo.">
+  <link rel="icon" type="image/png" href="/flavory-logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Reset ─────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    ::selection { background-color: #b22222; color: #fff2f2; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html {
+      font-family: 'Playfair Display', serif;
+      cursor: none;
+    }
+
+    body {
+      overflow-x: clip; /* clip instead of hidden — doesn't create a scroll container, so position:sticky works */
+      font-family: 'Playfair Display', serif;
+      cursor: none;
+    }
+
+    /* ── Custom cursor ──────────────────────────────── */
+    .custom-cursor {
+      width: 20px; height: 20px;
+      background-color: #b22222;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease;
+    }
+    .custom-cursor.hover { width: 36px; height: 36px; }
+
+    @media (hover: none) and (pointer: coarse) {
+      .custom-cursor { display: none !important; }
+      body, html { cursor: auto !important; }
+    }
+
+    /* ── Navbar ─────────────────────────────────────── */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 5%;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      background-color: #fff2f2;
+      transition: box-shadow 0.3s ease;
+    }
+    .navbar.scrolled { box-shadow: 0 2px 20px rgba(178,34,34,0.08); }
+
+    .navbar .logo img { height: 70px; }
+
+    .navbar .nav-links { display: flex; gap: 30px; }
+    .navbar .nav-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      padding: 8px 16px;
+      position: relative;
+      transition: color 0.25s ease;
+    }
+    .navbar .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 16px;
+      right: 16px;
+      height: 1.5px;
+      background: #811818;
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .navbar .nav-links a:hover { color: #1a0505; }
+    .navbar .nav-links a:hover::after { transform: scaleX(1); }
+
+    .navbar .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .navbar .btn-login {
+      text-decoration: none; color: #333; font-weight: bold;
+      padding: 8px 20px; border-radius: 20px; border: 1.5px solid #ccc;
+      transition: all 0.3s ease; font-family: 'Playfair Display', serif;
+    }
+    .navbar .btn-login:hover { border-color: #b22222; color: #b22222; }
+
+    .navbar .btn-cta {
+      text-decoration: none; color: #fff; font-weight: bold;
+      padding: 8px 20px; border-radius: 20px;
+      background-color: #b22222; font-family: 'Playfair Display', serif;
+      transition: all 0.3s ease;
+    }
+    .navbar .btn-cta:hover { background-color: #8b0000; box-shadow: 0 4px 16px rgba(178,34,34,0.3); }
+
+    /* ── Span red ───────────────────────────────────── */
+    .span-red { color: #b22222; }
+
+    /* ── HERO (preserved exactly) ───────────────────── */
+    .white-section {
+      height: 100vh;
+      background-color: #fff2f2;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      justify-content: center;
+      padding-left: 5%;
+      font-size: 2em;
+    }
+
+    .main-title {
+      font-size: 5.5em;
+      font-weight: bold;
+      margin: 0;
+      letter-spacing: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.5em;
+      margin-top: 0.5em;
+      color: #555;
+      font-style: italic;
+      text-align: left;
+      padding-left: 8%;
+    }
+
+    /* ── VIDEO / FRAME SECTION (preserved exactly) ──── */
+    .video-section {
+      position: relative;
+      height: 150vh;
+      overflow: hidden;
+    }
+
+    #frameCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      will-change: contents;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100vh;
+      padding: 0 5%;
+    }
+
+    .left-content, .right-content {
+      width: 25%;
+      opacity: 0;
+      transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .left-content  { transform: translateX(-100%); }
+    .right-content { transform: translateX(100%); text-align: right; padding-top: 45%; }
+    .show { opacity: 1; transform: translateX(0%); }
+
+    /* ── FEATURES SECTION ───────────────────────────── */
+    .features-section {
+      padding: 120px 5%;
+      background: #fff;
+    }
+
+    .section-wrap { max-width: 1100px; margin: 0 auto; text-align: center; }
+
+    .section-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #b22222;
+      margin-bottom: 18px;
+      font-family: 'Lora', serif;
+    }
+
+    .section-title {
+      font-size: 2.8em;
+      color: #1a0505;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .section-subtitle {
+      font-size: 1.05em;
+      color: #666;
+      max-width: 560px;
+      margin: 0 auto 64px;
+      line-height: 1.7;
+      font-family: 'Lora', serif;
+    }
+
+    /* ── Features: editorial layout ─────────────────── */
+    .features-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .features-title {
+      font-size: 2.8em;
+      color: #1a0505;
+      line-height: 1.2;
+      margin-bottom: 52px;
+    }
+    .features-title em { font-style: italic; color: #b22222; }
+
+    .feature-row {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      padding: 26px 0;
+      border-top: 1px solid rgba(26,5,5,0.08);
+    }
+    .feature-row:last-child { border-bottom: 1px solid rgba(26,5,5,0.08); }
+
+    .f-num {
+      font-family: 'Lora', serif;
+      font-size: 0.72em;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #b22222;
+      min-width: 28px;
+      padding-top: 4px;
+    }
+
+    .f-text h4 {
+      font-size: 1.15em;
+      color: #1a0505;
+      margin-bottom: 6px;
+    }
+    .f-text p {
+      font-family: 'Lora', serif;
+      font-size: 0.9em;
+      color: #888;
+      line-height: 1.7;
+    }
+
+    /* ── Wine glass SVG ──────────────────────────────── */
+    .glass-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .wine-glass-svg {
+      width: 100%;
+      max-width: 260px;
+      height: auto;
+      overflow: visible;
+    }
+
+    @keyframes wineBreath {
+      0%, 100% { opacity: 0.75; }
+      50%       { opacity: 1; }
+    }
+    @keyframes wispRise {
+      0%   { transform: translateY(0)   opacity: 0.5; }
+      100% { transform: translateY(-16px); opacity: 0; }
+    }
+
+    .wine-fill { animation: wineBreath 4s ease-in-out infinite; }
+
+    .wine-wisp {
+      animation: wispRise 2.8s ease-in-out infinite;
+      transform-origin: center bottom;
+    }
+    .wine-wisp:nth-of-type(2) { animation-delay: 0.9s; }
+    .wine-wisp:nth-of-type(3) { animation-delay: 1.8s; }
+
+    /* ── HOW IT WORKS ───────────────────────────────── */
+    .how-section {
+      padding: 120px 5%;
+      background: #0e0303;
+      color: #fff;
+    }
+
+    .how-section .section-title { color: #fff; }
+    .how-section .section-subtitle { color: rgba(255,255,255,0.55); }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-top: 72px;
+      position: relative;
+    }
+
+    /* Horizontal connector line between circles */
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 21px;
+      left: calc(50% / 3 + 21px);
+      right: calc(50% / 3 + 21px);
+      height: 1px;
+      background: rgba(129,24,24,0.25);
+    }
+
+    .step {
+      text-align: center;
+      padding: 0 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(129,24,24,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 36px;
+      background: #0e0303;
+    }
+
+    .step-num-inner {
+      font-family: 'Lora', serif;
+      font-size: 0.75em;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      color: #811818;
+    }
+
+    .step h3 {
+      font-size: 1.1em;
+      margin-bottom: 14px;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .step p {
+      font-size: 0.88em;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.8;
+      font-family: 'Lora', serif;
+    }
+
+    /* ── PRICING ────────────────────────────────────── */
+    .pricing-section {
+      padding: 120px 5%;
+      background: #fff2f2;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1080px;
+      margin: 64px auto 0;
+    }
+
+    .pricing-card {
+      background: #fff;
+      border: 1px solid #f0e0e0;
+      border-radius: 24px;
+      padding: 52px 44px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+    .pricing-card:not(.featured):hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(178,34,34,0.09);
+    }
+
+    .pricing-card.featured {
+      background: #b22222;
+      color: #fff;
+      border-color: #b22222;
+      transform: scale(1.03);
+    }
+    .pricing-card.featured:hover {
+      transform: scale(1.03) translateY(-6px);
+      box-shadow: 0 24px 60px rgba(178,34,34,0.35);
+    }
+
+    .badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a0505;
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 18px;
+      border-radius: 20px;
+      font-family: 'Lora', serif;
+    }
+
+    .plan-name {
+      font-size: 1em;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-family: 'Lora', serif;
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+
+    .price {
+      font-size: 3.5em;
+      font-weight: bold;
+      line-height: 1;
+      margin: 12px 0 4px;
+    }
+    .price sup { font-size: 0.45em; vertical-align: top; margin-top: 14px; display: inline-block; }
+    .price-period {
+      font-size: 0.88em;
+      opacity: 0.65;
+      margin-bottom: 6px;
+      font-family: 'Lora', serif;
+    }
+    .price-saving {
+      font-size: 0.82em;
+      font-weight: bold;
+      color: #4caf50;
+      margin-bottom: 32px;
+      font-family: 'Lora', serif;
+    }
+    .pricing-card.featured .price-saving { color: #a8ffa8; }
+
+    .price-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+    .price-features li {
+      padding: 10px 0;
+      font-size: 0.93em;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-family: 'Lora', serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .price-features li:last-child { border-bottom: none; }
+    .pricing-card.featured .price-features li { border-color: rgba(255,255,255,0.12); }
+
+    .check { color: #b22222; font-weight: bold; font-size: 1.1em; }
+    .pricing-card.featured .check { color: #fff; }
+
+    .btn-subscribe {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: 'Playfair Display', serif;
+      transition: all 0.3s ease;
+    }
+    .pricing-card:not(.featured) .btn-subscribe {
+      background: #b22222;
+      color: #fff;
+    }
+    .pricing-card:not(.featured) .btn-subscribe:hover {
+      background: #8b0000;
+      box-shadow: 0 8px 24px rgba(178,34,34,0.3);
+    }
+    .pricing-card.featured .btn-subscribe {
+      background: #fff;
+      color: #b22222;
+    }
+    .pricing-card.featured .btn-subscribe:hover {
+      background: #fff2f2;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    /* ── CTA SECTION ────────────────────────────────── */
+    .cta-section {
+      padding: 120px 5%;
+      background: #1a0505;
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-size: 3em;
+      color: #fff;
+      margin-bottom: 18px;
+      line-height: 1.2;
+    }
+    .cta-section p {
+      font-size: 1.1em;
+      color: rgba(255,255,255,0.6);
+      max-width: 500px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      font-family: 'Lora', serif;
+    }
+    .btn-hero-cta {
+      display: inline-block;
+      padding: 18px 48px;
+      border-radius: 50px;
+      background: #b22222;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.05em;
+      font-weight: bold;
+      font-family: 'Playfair Display', serif;
+      transition: all 0.3s ease;
+    }
+    .btn-hero-cta:hover {
+      background: #d62828;
+      box-shadow: 0 12px 40px rgba(178,34,34,0.4);
+      transform: translateY(-3px);
+    }
+
+    /* ── FOOTER ─────────────────────────────────────── */
+    footer {
+      background-color: #0a0202;
+      color: rgba(255,255,255,0.5);
+      padding: 60px 5% 40px;
+      font-family: 'Lora', serif;
+      font-size: 0.88em;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 40px;
+      flex-wrap: wrap;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 32px;
+    }
+    .footer-brand .footer-logo {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+    .footer-brand p { line-height: 1.7; max-width: 260px; }
+    .footer-links h4 { color: #fff; margin-bottom: 14px; font-size: 0.9em; letter-spacing: 2px; text-transform: uppercase; }
+    .footer-links ul { list-style: none; }
+    .footer-links ul li { margin-bottom: 10px; }
+    .footer-links ul li a { color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+    .footer-links ul li a:hover { color: #b22222; }
+    .footer-bottom { text-align: center; max-width: 1100px; margin: 0 auto; }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 900px) {
+      .features-inner { grid-template-columns: 1fr; gap: 0; }
+      .glass-wrap { order: -1; margin-bottom: 48px; }
+      .wine-glass-svg { max-width: 160px; }
+      .features-title { font-size: 2em; margin-bottom: 36px; text-align: center; }
+      .steps-grid { grid-template-columns: 1fr; gap: 40px; }
+      .steps-grid::before { display: none; }
+      .step { padding: 0; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
+      .pricing-card.featured { transform: scale(1); }
+      .pricing-card.free { order: -1; }
+    }
+
+    @media (max-width: 768px) {
+      .navbar { flex-wrap: wrap; padding: 10px; }
+      .navbar .nav-links { display: none; }
+      .navbar .logo img { height: 35px; }
+      .main-title { font-size: 3.5em; letter-spacing: 6px; }
+      .subtitle { font-size: 1.1em; }
+      .section-title { font-size: 2em; }
+      .left-content, .right-content { width: 100%; text-align: center; padding-top: 20px; }
+      .right-content { padding-top: 20px; }
+      .content { flex-direction: column; padding: 0 10px; }
+      .cta-section h2 { font-size: 2.2em; }
+    }
+
+    @media (max-width: 480px) {
+      .main-title { font-size: 2.2em; letter-spacing: 3px; }
+      .subtitle { font-size: 1em; }
+      .white-section { overflow: hidden; }
+    }
+
+    @media (max-width: 380px) {
+      .main-title { font-size: 1.8em; letter-spacing: 1px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="custom-cursor" id="cursor"></div>
+
+  <!-- ── NAVBAR ─────────────────────────────────────── -->
+  <nav class="navbar" id="navbar">
+    <div class="logo">
+      <a href="/"><img src="/flavory-logo.png" alt="Flavory Logo"></a>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Funzionalità</a>
+      <a href="#come-funziona">Come funziona</a>
+      <a href="#pricing">Prezzi</a>
+    </div>
+    <div class="nav-actions" id="navActions">
+      <a href="/login.html" class="btn-login">Accedi</a>
+      <a href="#pricing" class="btn-cta">Inizia ora</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO (preserved) ──────────────────────────── -->
+  <div class="white-section" id="home">
+    <h1 class="main-title">FLAVORY<span class="span-red">.</span></h1>
+    <p class="subtitle">Where Every Flavor Finds Its Perfect Pairing</p>
+  </div>
+
+  <!-- ── VIDEO / FRAME SECTION (preserved) ─────────── -->
+  <div class="video-section">
+    <canvas id="frameCanvas"></canvas>
+    <div class="content">
+      <div class="left-content hidden">
+        <h1 style="line-height: 5; font-size: 42px;">L'arte del vino?</h1>
+        <p style="line-height: 2.3; font-size: 22px;">è un equilibrio tra <span class="span-red">tradizione</span>,
+          <span class="span-red">passione</span> e <span class="span-red">creatività</span>, capace di trasformare
+          semplici uve in espressioni uniche di territorio, cultura e storia.</p>
+      </div>
+      <div class="right-content hidden">
+        <h1 style="line-height: 4; font-size: 42px;">FLAVORY</h1>
+        <p style="line-height: 2.3; font-size: 22px;">è l'<span class="span-red">abbinamento</span> perfetto tra
+          <span class="span-red">cibo</span> e <span class="span-red">vino</span>,
+          reso accessibile a tutti grazie all'intelligenza artificiale.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FEATURES ───────────────────────────────────── -->
+  <section class="features-section" id="features">
+    <div class="features-inner">
+
+      <!-- Left: intro + editorial list -->
+      <div class="features-left">
+        <span class="section-label">Perché Flavory</span>
+        <h2 class="features-title">Il sommelier<br><em>che non sapevi<br>di avere</em></h2>
+
+        <div class="feature-row">
+          <span class="f-num">01</span>
+          <div class="f-text">
+            <h4>Sommelier AI</h4>
+            <p>Powered by GPT-4o. Migliaia di abbinamenti analizzati in secondi, con spiegazioni da vero esperto.</p>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <span class="f-num">02</span>
+          <div class="f-text">
+            <h4>Locale & Regionale</h4>
+            <p>Trova i vini della tua zona: dalle cantine artigianali ai grandi produttori DOC e DOCG del territorio.</p>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <span class="f-num">03</span>
+          <div class="f-text">
+            <h4>Anche al Supermercato</h4>
+            <p>Non solo enoteche. Flavory suggerisce le migliori opzioni da Coop, Conad ed Esselunga, per ogni budget.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: wine glass illustration -->
+      <div class="glass-wrap">
+        <svg class="wine-glass-svg" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+          <!-- Wine fill (lower portion of bowl) -->
+          <path class="wine-fill"
+            d="M24 184 C36 220 58 242 80 250 L120 250 C142 242 164 220 176 184 Q100 200 24 184Z"
+            fill="rgba(178,34,34,0.14)"/>
+
+          <!-- Wine surface shimmer -->
+          <path d="M24 184 Q100 200 176 184"
+            stroke="#b22222" stroke-width="1" fill="none" opacity="0.55"/>
+
+          <!-- Aroma wisps (animated) -->
+          <path class="wine-wisp"
+            d="M76 164 Q68 144 74 128"
+            stroke="rgba(178,34,34,0.35)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path class="wine-wisp"
+            d="M100 156 Q106 136 100 118"
+            stroke="rgba(178,34,34,0.35)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path class="wine-wisp"
+            d="M124 164 Q132 144 126 128"
+            stroke="rgba(178,34,34,0.35)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+          <!-- Bowl — left side -->
+          <path d="M40 16 C8 56 2 118 22 186 C34 220 58 242 80 250"
+            stroke="#1a0505" stroke-width="1.6" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Bowl — right side -->
+          <path d="M160 16 C192 56 198 118 178 186 C166 220 142 242 120 250"
+            stroke="#1a0505" stroke-width="1.6" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Rim -->
+          <line x1="40" y1="16" x2="160" y2="16"
+            stroke="#1a0505" stroke-width="1.6" stroke-linecap="round"/>
+
+          <!-- Stem -->
+          <line x1="100" y1="250" x2="100" y2="344"
+            stroke="#1a0505" stroke-width="1.6" stroke-linecap="round"/>
+
+          <!-- Base — top arc -->
+          <path d="M42 356 Q100 344 158 356"
+            stroke="#1a0505" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+          <!-- Base — bottom arc -->
+          <path d="M42 356 Q100 370 158 356"
+            stroke="#1a0505" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+          <!-- Highlight on glass (subtle) -->
+          <path d="M74 22 C60 62 56 118 64 180"
+            stroke="rgba(255,255,255,0.22)" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+        </svg>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ────────────────────────────────── -->
+  <section class="how-section" id="come-funziona">
+    <div class="section-wrap">
+      <span class="section-label" style="color: rgba(178,34,34,0.9);">Come funziona</span>
+      <h2 class="section-title">Tre passi verso il vino perfetto</h2>
+      <p class="section-subtitle">Semplice come parlare con un esperto di fiducia.</p>
+
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-circle"><span class="step-num-inner">01</span></div>
+          <h3>Descrivi il tuo pasto</h3>
+          <p>Inserisci i piatti del menu: dall'antipasto al dolce, anche solo "pizza margherita" va bene.</p>
+        </div>
+        <div class="step">
+          <div class="step-circle"><span class="step-num-inner">02</span></div>
+          <h3>Indica la tua zona</h3>
+          <p>Specifica la città o regione per ricevere consigli su vini locali e dove trovarli vicino a te.</p>
+        </div>
+        <div class="step">
+          <div class="step-circle"><span class="step-num-inner">03</span></div>
+          <h3>Ricevi il consiglio</h3>
+          <p>Il tuo sommelier AI analizza menu e zona, e ti consiglia il vino ideale con spiegazioni dettagliate.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ─────────────────────────────────────── -->
+  <section class="pricing-section" id="pricing">
+    <div class="section-wrap">
+      <span class="section-label">Piani</span>
+      <h2 class="section-title">Scegli il tuo piano</h2>
+      <p class="section-subtitle">Accesso completo al tuo sommelier AI personale. Nessuna sorpresa.</p>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="pricing-card free">
+          <p class="plan-name">Gratuito</p>
+          <div class="price"><sup>€</sup>0</div>
+          <p class="price-period">per sempre</p>
+          <p class="price-saving">&nbsp;</p>
+          <ul class="price-features">
+            <li><span class="check">✓</span> 3 consigli di prova</li>
+            <li><span class="check">✓</span> AI Sommelier GPT-4o</li>
+            <li><span class="check">✓</span> Vini locali e regionali</li>
+            <li><span class="check">✓</span> Opzioni supermercato</li>
+            <li style="color:#ccc"><span style="color:#ccc">—</span> &nbsp;Consigli illimitati</li>
+          </ul>
+          <a href="/login.html?tab=register" class="btn-subscribe" style="display:block;text-align:center;text-decoration:none;">Inizia gratis</a>
+        </div>
+
+        <!-- Monthly -->
+        <div class="pricing-card">
+          <p class="plan-name">Mensile</p>
+          <div class="price"><sup>€</sup>9<span style="font-size:0.5em">,99</span></div>
+          <p class="price-period">al mese</p>
+          <p class="price-saving">&nbsp;</p>
+          <ul class="price-features">
+            <li><span class="check">✓</span> Consigli illimitati</li>
+            <li><span class="check">✓</span> AI Sommelier GPT-4o</li>
+            <li><span class="check">✓</span> Vini locali e regionali</li>
+            <li><span class="check">✓</span> Opzioni supermercato</li>
+            <li><span class="check">✓</span> Cancella quando vuoi</li>
+          </ul>
+          <button class="btn-subscribe" onclick="subscribe('monthly')">Abbonati ora</button>
+        </div>
+
+        <!-- Yearly (featured) -->
+        <div class="pricing-card featured">
+          <span class="badge">Più conveniente</span>
+          <p class="plan-name" style="color:rgba(255,255,255,0.7)">Annuale</p>
+          <div class="price"><sup>€</sup>79</div>
+          <p class="price-period" style="color:rgba(255,255,255,0.6)">all'anno · equiv. €6,58/mese</p>
+          <p class="price-saving">Risparmi €40,88 — 2 mesi gratis!</p>
+          <ul class="price-features">
+            <li><span class="check">✓</span> Tutto del piano mensile</li>
+            <li><span class="check">✓</span> 2 mesi gratuiti inclusi</li>
+            <li><span class="check">✓</span> Accesso anticipato nuove funzioni</li>
+            <li><span class="check">✓</span> Supporto prioritario</li>
+            <li><span class="check">✓</span> Cancella quando vuoi</li>
+          </ul>
+          <button class="btn-subscribe" onclick="subscribe('yearly')">Scegli il piano annuale</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA BOTTOM ──────────────────────────────────── -->
+  <section class="cta-section">
+    <h2>Pronto per il vino perfetto?</h2>
+    <p>Unisciti a centinaia di appassionati che hanno già trovato il loro abbinamento ideale con Flavory.</p>
+    <a href="#pricing" class="btn-hero-cta">Inizia ora →</a>
+  </section>
+
+  <!-- ── FOOTER ──────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">FLAVORY<span class="span-red">.</span></div>
+        <p>Il tuo sommelier AI personale. Il vino perfetto per ogni pasto, ogni zona, ogni budget.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Prodotto</h4>
+        <ul>
+          <li><a href="#features">Funzionalità</a></li>
+          <li><a href="#come-funziona">Come funziona</a></li>
+          <li><a href="#pricing">Prezzi</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="/login.html">Accedi</a></li>
+          <li><a href="/login.html?tab=register">Registrati</a></li>
+          <li><a href="/app.html">Apri l'app</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Legale</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Termini di servizio</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 FLAVORY. Tutti i diritti riservati.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ── Custom cursor ─────────────────────────────────
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    // ── Navbar scroll shadow ──────────────────────────
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ── Frame animation — canvas + lerp ──────────────
+    const totalFrames  = 300;
+    const framePath    = i => `/frames/frame_${String(i).padStart(4, '0')}.png`;
+    const canvas       = document.getElementById('frameCanvas');
+    const ctx          = canvas.getContext('2d');
+    const videoSection = document.querySelector('.video-section');
+
+    // Set canvas to actual pixel dimensions (handles retina too)
+    function resizeCanvas() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas, { passive: true });
+
+    // Preload all frames
+    const images = new Array(totalFrames);
+    for (let i = 0; i < totalFrames; i++) {
+      const img = new Image();
+      img.src = framePath(i + 1);
+      images[i] = img;
+    }
+
+    function drawFrame(img) {
+      if (!img || !img.complete || !img.naturalWidth) return;
+      const cw = canvas.width, ch = canvas.height;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const x = (cw - img.naturalWidth  * scale) / 2;
+      const y = (ch - img.naturalHeight * scale) / 2;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale);
+    }
+
+    // Draw first frame as soon as it loads
+    images[0].onload = () => drawFrame(images[0]);
+
+    let smoothFrame  = 0;   // lerp'd current frame
+    let lastDrawn    = -1;  // avoid redrawing the same frame
+
+    function updateFrame() {
+      // Calculate progress only within the video section
+      const sectionTop    = videoSection.offsetTop;
+      const scrollLength  = videoSection.offsetHeight - window.innerHeight;
+      const scrolled      = window.scrollY - sectionTop;
+      const progress      = Math.max(0, Math.min(1, scrolled / scrollLength));
+      const targetFrame   = Math.min(totalFrames - 1, Math.floor(progress * totalFrames));
+
+      // Lerp toward target — 0.14 = gentle ease-out feel
+      smoothFrame += (targetFrame - smoothFrame) * 0.14;
+      const frameIndex = Math.round(smoothFrame);
+
+      if (frameIndex !== lastDrawn) {
+        drawFrame(images[frameIndex]);
+        lastDrawn = frameIndex;
+      }
+
+      requestAnimationFrame(updateFrame);
+    }
+    requestAnimationFrame(updateFrame);
+
+    // ── Intersection observer (preserved) ─────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => e.isIntersecting
+        ? e.target.classList.add('show')
+        : e.target.classList.remove('show')
+      );
+    });
+    document.querySelectorAll('.hidden').forEach(el => observer.observe(el));
+
+    // ── Auth-aware navbar ─────────────────────────────
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('navActions').innerHTML = `
+            <a href="/app.html" class="btn-cta">Apri l'App →</a>
+          `;
+        }
+      } catch {}
+    }
+    checkAuth();
+
+    // ── Subscribe flow ────────────────────────────────
+    async function subscribe(plan) {
+      const authRes = await fetch('/api/auth/me');
+      if (!authRes.ok) {
+        // Not logged in — go to login, then come back to subscribe
+        sessionStorage.setItem('pendingPlan', plan);
+        window.location.href = '/login.html?next=subscribe';
+        return;
+      }
+      try {
+        const res  = await fetch('/api/stripe/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else alert('Errore: ' + (data.error || 'riprova'));
+      } catch {
+        alert('Errore di connessione, riprova.');
+      }
+    }
+  </script>
+</body>
+</html>

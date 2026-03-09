@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FLAVORY. — Accedi</title>
+  <link rel="icon" type="image/png" href="/flavory-logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    ::selection { background: #b22222; color: #fff2f2; }
+
+    body {
+      font-family: 'Playfair Display', serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      background: #fff2f2;
+      cursor: none;
+    }
+
+    .custom-cursor {
+      width: 20px; height: 20px;
+      background: #b22222;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      transition: width 0.2s, height 0.2s;
+    }
+    .custom-cursor.hover { width: 34px; height: 34px; }
+
+    /* ── Layout ───────────────────────────────────── */
+    .auth-left {
+      flex: 1;
+      background: #0e0303;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(178,34,34,0.15) 0%, transparent 70%);
+      top: -100px; right: -100px;
+    }
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(178,34,34,0.1) 0%, transparent 70%);
+      bottom: -80px; left: -60px;
+    }
+
+    .left-brand {
+      position: relative;
+      z-index: 1;
+    }
+    .left-brand a {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 48px;
+    }
+    .left-brand img { height: 44px; }
+    .left-brand .logo-text {
+      font-size: 1.6em;
+      font-weight: bold;
+      color: #fff;
+      letter-spacing: 4px;
+    }
+    .left-brand .logo-text span { color: #b22222; }
+
+    .left-quote {
+      position: relative;
+      z-index: 1;
+      margin-top: auto;
+    }
+    .left-quote blockquote {
+      font-size: 1.6em;
+      color: #fff;
+      font-style: italic;
+      line-height: 1.4;
+      margin-bottom: 18px;
+      border-left: 3px solid #b22222;
+      padding-left: 24px;
+    }
+    .left-quote cite {
+      font-family: 'Lora', serif;
+      font-size: 0.85em;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .auth-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      background: #fff2f2;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .auth-tagline {
+      font-family: 'Lora', serif;
+      font-size: 0.92em;
+      color: #888;
+      margin-bottom: 36px;
+    }
+
+    /* ── Tabs ─────────────────────────────────────── */
+    .auth-tabs {
+      display: flex;
+      background: rgba(0,0,0,0.04);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 32px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95em;
+      font-weight: bold;
+      color: #888;
+      cursor: none;
+      transition: all 0.25s ease;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: #1a0505;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ── Forms ────────────────────────────────────── */
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid #e0d0d0;
+      border-radius: 12px;
+      font-family: 'Lora', serif;
+      font-size: 0.95em;
+      background: #fff;
+      color: #1a0505;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      cursor: none;
+    }
+    .form-group input:focus {
+      border-color: #b22222;
+      box-shadow: 0 0 0 3px rgba(178,34,34,0.08);
+    }
+    .form-group input::placeholder { color: #aaa; }
+
+    .form-group label {
+      display: block;
+      font-family: 'Lora', serif;
+      font-size: 0.82em;
+      color: #888;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #b22222;
+      border: 1px solid #f5c6c6;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Lora', serif;
+      font-size: 0.88em;
+      margin-bottom: 16px;
+    }
+    .error-msg.hidden { display: none; }
+
+    .btn-auth {
+      width: 100%;
+      padding: 16px;
+      background: #b22222;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05em;
+      font-weight: bold;
+      cursor: none;
+      transition: all 0.3s ease;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-auth:hover { background: #8b0000; box-shadow: 0 8px 24px rgba(178,34,34,0.3); }
+    .btn-auth:disabled { opacity: 0.6; }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      right: 20px; top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    .terms-note {
+      font-family: 'Lora', serif;
+      font-size: 0.78em;
+      color: #aaa;
+      margin-top: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .terms-note a { color: #b22222; text-decoration: none; }
+    .terms-note a:hover { text-decoration: underline; }
+
+    .divider {
+      text-align: center;
+      font-family: 'Lora', serif;
+      font-size: 0.8em;
+      color: #ccc;
+      margin: 28px 0 0;
+    }
+
+    /* ── Mobile ───────────────────────────────────── */
+    @media (max-width: 768px) {
+      .auth-left { display: none; }
+      .auth-right { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="custom-cursor" id="cursor"></div>
+
+  <!-- ── LEFT PANEL ───────────────────────────────── -->
+  <aside class="auth-left">
+    <div class="left-brand">
+      <a href="/">
+        <img src="/flavory-logo.png" alt="Flavory">
+        <span class="logo-text">FLAVORY<span>.</span></span>
+      </a>
+    </div>
+    <div class="left-quote">
+      <blockquote>
+        "Il vino è la poesia della terra."
+      </blockquote>
+      <cite>— Mario Soldati</cite>
+    </div>
+  </aside>
+
+  <!-- ── RIGHT PANEL ──────────────────────────────── -->
+  <main class="auth-right">
+    <div class="auth-card">
+      <p class="auth-tagline">Il tuo sommelier AI personale ti aspetta.</p>
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Accedi</button>
+        <button class="tab-btn" id="tabRegister" onclick="switchTab('register')">Registrati</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="la-tua@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div class="error-msg hidden" id="loginError"></div>
+        <button type="submit" class="btn-auth" id="loginBtn">Accedi →</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label for="regName">Il tuo nome</label>
+          <input type="text" id="regName" placeholder="Mario Rossi" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" placeholder="la-tua@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" placeholder="Minimo 8 caratteri" required autocomplete="new-password" minlength="8">
+        </div>
+        <div class="error-msg hidden" id="registerError"></div>
+        <button type="submit" class="btn-auth" id="registerBtn">Crea account →</button>
+        <p class="terms-note">
+          Registrandoti accetti i nostri <a href="#">Termini di servizio</a>
+          e la <a href="#">Privacy Policy</a>.
+        </p>
+      </form>
+
+      <p class="divider" id="switchHint"></p>
+    </div>
+  </main>
+
+  <script>
+    // ── Custom cursor ──────────────────────────────
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button, input').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    // ── URL params ──────────────────────────────────
+    const params = new URLSearchParams(location.search);
+    if (params.get('tab') === 'register') switchTab('register');
+
+    // ── Tab switch ──────────────────────────────────
+    function switchTab(tab) {
+      document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+      document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+    }
+
+    // ── After auth redirect ─────────────────────────
+    function afterAuth(subStatus) {
+      const next = params.get('next');
+      if (next === 'subscribe') {
+        // Redirect back to app which will handle the subscribe flow
+        window.location.href = '/app.html?showPricing=1';
+      } else {
+        window.location.href = '/app.html';
+      }
+    }
+
+    // ── Login ───────────────────────────────────────
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('loginError');
+      err.classList.add('hidden');
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
+      btn.textContent = 'Accesso in corso…';
+
+      try {
+        const res  = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email:    document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        afterAuth(data.subscription_status);
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        btn.textContent = 'Accedi →';
+      }
+    }
+
+    // ── Register ────────────────────────────────────
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('registerBtn');
+      const err = document.getElementById('registerError');
+      err.classList.add('hidden');
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
+      btn.textContent = 'Creazione account…';
+
+      try {
+        const res  = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name:     document.getElementById('regName').value,
+            email:    document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        afterAuth(data.subscription_status);
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        btn.textContent = 'Crea account →';
+      }
+    }
+  </script>
+</body>
+</html>
