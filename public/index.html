@@ -568,6 +568,25 @@
     @media (max-width: 380px) {
       .main-title { font-size: 1.8em; letter-spacing: 1px; }
     }
+
+    /* ── Wave dividers ───────────────────────────────── */
+    .wave-sep {
+      display: block;
+      line-height: 0;
+      overflow: hidden;
+      margin-bottom: -1px; /* prevent sub-pixel gap */
+    }
+    .wave-sep svg {
+      display: block;
+      width: 100%;
+      height: 90px;
+    }
+    @media (max-width: 768px) {
+      .wave-sep svg { height: 55px; }
+    }
+    @media (max-width: 480px) {
+      .wave-sep svg { height: 38px; }
+    }
   </style>
 </head>
 <body>
@@ -593,6 +612,13 @@
   <div class="white-section" id="home">
     <h1 class="main-title">FLAVORY<span class="span-red">.</span></h1>
     <p class="subtitle">Where Every Flavor Finds Its Perfect Pairing</p>
+  </div>
+
+  <!-- ── WAVE: hero #fff2f2 → features #fff ──────────── -->
+  <div class="wave-sep" style="background:#fff2f2">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,45 C180,80 360,12 600,48 C820,82 1020,18 1260,52 C1350,66 1410,38 1440,44 L1440,90 L0,90 Z" fill="#fff"/>
+    </svg>
   </div>
 
   <!-- ── FEATURES ───────────────────────────────────── -->
@@ -689,6 +715,13 @@
     </div>
   </section>
 
+  <!-- ── WAVE: features #fff → how #0e0303 ────────────── -->
+  <div class="wave-sep" style="background:#fff">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,28 C160,72 340,4 540,38 C740,70 860,8 1060,46 C1220,76 1360,20 1440,42 L1440,90 L0,90 Z" fill="#0e0303"/>
+    </svg>
+  </div>
+
   <!-- ── HOW IT WORKS ────────────────────────────────── -->
   <section class="how-section" id="come-funziona">
     <div class="section-wrap">
@@ -715,6 +748,13 @@
       </div>
     </div>
   </section>
+
+  <!-- ── WAVE: how #0e0303 → pricing #fff2f2 ──────────── -->
+  <div class="wave-sep" style="background:#0e0303">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,62 C200,20 400,82 620,44 C840,8 980,74 1160,36 C1300,10 1400,60 1440,48 L1440,90 L0,90 Z" fill="#fff2f2"/>
+    </svg>
+  </div>
 
   <!-- ── PRICING ─────────────────────────────────────── -->
   <section class="pricing-section" id="pricing">
@@ -776,12 +816,26 @@
     </div>
   </section>
 
+  <!-- ── WAVE: pricing #fff2f2 → cta #1a0505 ─────────── -->
+  <div class="wave-sep" style="background:#fff2f2">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,32 C140,70 320,6 520,44 C720,80 920,16 1120,54 C1270,82 1380,30 1440,46 L1440,90 L0,90 Z" fill="#1a0505"/>
+    </svg>
+  </div>
+
   <!-- ── CTA BOTTOM ──────────────────────────────────── -->
   <section class="cta-section">
     <h2>Pronto per il vino perfetto?</h2>
     <p>Unisciti a centinaia di appassionati che hanno già trovato il loro abbinamento ideale con Flavory.</p>
     <a href="#pricing" class="btn-hero-cta">Inizia ora →</a>
   </section>
+
+  <!-- ── WAVE: cta #1a0505 → footer #0a0202 ───────────── -->
+  <div class="wave-sep" style="background:#1a0505">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,52 C260,82 520,24 800,58 C1020,86 1240,32 1440,54 L1440,90 L0,90 Z" fill="#0a0202"/>
+    </svg>
+  </div>
 
   <!-- ── FOOTER ──────────────────────────────────────── -->
   <footer>
