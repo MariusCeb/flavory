@@ -12,6 +12,12 @@ require('dotenv').config();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 const app    = express();
+
+function baseUrl() {
+  let u = (process.env.BASE_URL || '').trim().replace(/\/$/, '');
+  if (u && !u.startsWith('http://') && !u.startsWith('https://')) u = 'https://' + u;
+  return u;
+}
 const db     = new Database(path.join(__dirname, 'flavory.db'));
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -164,8 +170,8 @@ app.post('/api/stripe/create-checkout', authenticate, async (req, res) => {
       mode:                 'subscription',
       payment_method_types: ['card'],
       line_items:           [{ price: priceId, quantity: 1 }],
-      success_url:          `${process.env.BASE_URL}/app.html?success=1`,
-      cancel_url:           `${process.env.BASE_URL}/app.html?cancelled=1`,
+      success_url:          `${baseUrl()}/app.html?success=1`,
+      cancel_url:           `${baseUrl()}/app.html?cancelled=1`,
       metadata:             { user_id: String(user.id) },
       allow_promotion_codes: true
     });
@@ -184,7 +190,7 @@ app.get('/api/stripe/portal', authenticate, async (req, res) => {
   try {
     const session = await stripe.billingPortal.sessions.create({
       customer:   user.stripe_customer_id,
-      return_url: `${process.env.BASE_URL}/app.html`
+      return_url: `${baseUrl()}/app.html`
     });
     res.json({ url: session.url });
   } catch (err) {
