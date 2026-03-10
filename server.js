@@ -37,8 +37,9 @@ db.exec(`
     created_at          DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
-// Migration: add free_requests_used column for existing DBs
+// Migration: add free_requests_used and subscription_plan columns for existing DBs
 try { db.exec('ALTER TABLE users ADD COLUMN free_requests_used INTEGER DEFAULT 0'); } catch {}
+try { db.exec('ALTER TABLE users ADD COLUMN subscription_plan TEXT'); } catch {}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS password_resets (
@@ -176,7 +177,7 @@ app.post('/api/auth/logout', (_, res) => {
 
 app.get('/api/auth/me', authenticate, (req, res) => {
   const user = db
-    .prepare('SELECT id, name, email, subscription_status, free_requests_used FROM users WHERE id = ?')
+    .prepare('SELECT id, name, email, subscription_status, subscription_plan, free_requests_used FROM users WHERE id = ?')
     .get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utente non trovato' });
   res.json(user);
@@ -202,7 +203,7 @@ app.post('/api/stripe/create-checkout', authenticate, async (req, res) => {
       line_items:           [{ price: priceId, quantity: 1 }],
       success_url:          `${baseUrl()}/app.html?success=1`,
       cancel_url:           `${baseUrl()}/app.html?cancelled=1`,
-      metadata:             { user_id: String(user.id) },
+      metadata:             { user_id: String(user.id), plan },
       allow_promotion_codes: true
     });
     res.json({ url: session.url });
@@ -245,8 +246,8 @@ async function handleWebhook(req, res) {
       const session = event.data.object;
       const userId  = session.metadata?.user_id;
       if (userId) {
-        db.prepare('UPDATE users SET subscription_status = ?, subscription_id = ?, free_requests_used = 0 WHERE id = ?')
-          .run('active', session.subscription, userId);
+        db.prepare('UPDATE users SET subscription_status = ?, subscription_id = ?, subscription_plan = ?, free_requests_used = 0 WHERE id = ?')
+          .run('active', session.subscription, session.metadata?.plan || 'monthly', userId);
       }
       break;
     }

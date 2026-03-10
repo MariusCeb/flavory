@@ -968,7 +968,8 @@
         if (res.ok) {
           const user = await res.json();
           document.getElementById('navActions').innerHTML = `
-            <a href="/app.html" class="btn-cta">Apri l'App →</a>
+            <span style="font-family:'Lora',serif;font-size:0.88em;color:#555;">Ciao, <strong>${user.name}</strong></span>
+            <a href="/app.html" class="btn-cta">Vai all'app →</a>
           `;
         }
       } catch {}
