@@ -7,7 +7,6 @@
   <link rel="icon" type="image/png" href="/flavory-logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,13 +20,7 @@
       cursor: none;
     }
 
-    img.emoji {
-      height: 1.1em; width: 1.1em;
-      vertical-align: -0.15em;
-      display: inline-block;
-    }
-
-    @media (hover: none) and (pointer: coarse) {
+@media (hover: none) and (pointer: coarse) {
       .custom-cursor { display: none !important; }
       body, * { cursor: auto !important; }
     }
@@ -200,7 +193,7 @@
     .abbo-content.hidden { display: none; }
 
     /* Pricing cards (same as old gate) */
-    .gate-icon { font-size: 3.5em; margin-bottom: 24px; }
+    .gate-icon { font-size: 3.5em; margin-bottom: 24px; color: #b22222; }
     .gate-title { font-size: 2em; margin-bottom: 14px; color: #fff; }
     .gate-subtitle {
       font-family: 'Lora', serif;
@@ -401,8 +394,8 @@
       flex: 1; display: flex; align-items: center; justify-content: center;
       padding: 48px; overflow-y: auto;
     }
-    .result-empty { text-align: center; color: rgba(255,255,255,0.2); }
-    .result-empty .big-icon { font-size: 5em; margin-bottom: 20px; display: block; opacity: 0.25; }
+    .result-empty { text-align: center; color: rgba(255,255,255,0.15); }
+    .result-empty .big-icon { width: 72px; height: 72px; margin: 0 auto 20px; display: block; opacity: 0.2; }
     .result-empty p { font-family: 'Lora', serif; font-size: 1em; }
 
     .result-loading { text-align: center; }
@@ -498,7 +491,12 @@
 
     <!-- Pricing (not subscribed) -->
     <div id="abboPricing" class="abbo-content hidden">
-      <div class="gate-icon">🍷</div>
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="width:1em;height:1em;vertical-align:middle">
+          <path d="M8 22h8M12 22v-7M6 2h12L15 11a3 3 0 01-6 0L6 2z"/>
+          <line x1="5" y1="6" x2="19" y2="6"/>
+        </svg>
+      </div>
       <h2 class="gate-title">Sblocca il tuo Sommelier AI</h2>
       <p class="gate-subtitle">
         Abbonati per consigli illimitati dal tuo sommelier personale.
@@ -584,7 +582,10 @@
 
     <div class="result-panel">
       <div class="result-empty" id="resultEmpty">
-        <span class="big-icon">🍷</span>
+        <svg class="big-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 22h8M12 22v-7M6 2h12L15 11a3 3 0 01-6 0L6 2z"/>
+          <line x1="5" y1="6" x2="19" y2="6"/>
+        </svg>
         <p>Il tuo consiglio apparirà qui</p>
       </div>
       <div class="result-loading hidden" id="resultLoading">
@@ -616,14 +617,6 @@
       });
     }
 
-    // ── Twemoji ────────────────────────────────────────
-    function parseTwemoji(el) {
-      twemoji.parse(el || document.body, {
-        folder: 'svg', ext: '.svg',
-        base: 'https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/'
-      });
-    }
-    parseTwemoji();
 
     // ── Toast ──────────────────────────────────────────
     function showToast(msg, type = 'success') {
@@ -672,7 +665,6 @@
       document.getElementById('tabAbbonamento').classList.toggle('active', !isSommelier);
       document.getElementById('mainApp').classList.toggle('hidden', !isSommelier);
       document.getElementById('abbonamentoView').classList.toggle('hidden', isSommelier);
-      if (!isSommelier) parseTwemoji(document.getElementById('abbonamentoView'));
     }
 
     // ── Auth + init ────────────────────────────────────
@@ -790,7 +782,6 @@
         const html = marked.parse(data.recommendation || '');
         const card = document.getElementById('recommendationCard');
         card.innerHTML = html;
-        parseTwemoji(card);
 
         document.getElementById('resultLoading').classList.add('hidden');
         document.getElementById('resultContent').classList.remove('hidden');
