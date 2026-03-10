@@ -781,15 +781,33 @@
             </clipPath>
           </defs>
 
-          <!-- ── Wine body (clipped + sloshing) ── -->
+          <!-- ── Wine body (clipped + sloshing + wavy surface) ── -->
           <g clip-path="url(#bowlClip)">
             <g class="wine-slosh-group">
-              <!-- Wide rect so it still fills bowl edges when tilted -->
-              <rect x="-80" y="176" width="360" height="130" fill="url(#wineGrad)"/>
-              <!-- Surface glow strip -->
-              <rect x="-80" y="173" width="360" height="6" fill="rgba(178,34,34,0.2)"/>
-              <!-- Surface line -->
-              <line x1="-80" y1="176" x2="280" y2="176" stroke="#b22222" stroke-width="1.2" opacity="0.5"/>
+              <!-- Wine fill — top edge is animated sine wave, no straight line -->
+              <path fill="url(#wineGrad)">
+                <animate attributeName="d"
+                  dur="2.6s" repeatCount="indefinite" calcMode="spline"
+                  keyTimes="0;0.5;1"
+                  keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                  values="
+                    M-80,176 C-10,169 30,183 80,176 C130,169 170,183 280,176 L280,320 L-80,320 Z;
+                    M-80,176 C-10,183 30,169 80,176 C130,183 170,169 280,176 L280,320 L-80,320 Z;
+                    M-80,176 C-10,169 30,183 80,176 C130,169 170,183 280,176 L280,320 L-80,320 Z
+                  "/>
+              </path>
+              <!-- Wavy surface shimmer (same wave, just the top curve) -->
+              <path fill="none" stroke="#b22222" stroke-width="1.4" opacity="0.55">
+                <animate attributeName="d"
+                  dur="2.6s" repeatCount="indefinite" calcMode="spline"
+                  keyTimes="0;0.5;1"
+                  keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                  values="
+                    M-80,176 C-10,169 30,183 80,176 C130,169 170,183 280,176;
+                    M-80,176 C-10,183 30,169 80,176 C130,183 170,169 280,176;
+                    M-80,176 C-10,169 30,183 80,176 C130,169 170,183 280,176
+                  "/>
+              </path>
             </g>
           </g>
 
