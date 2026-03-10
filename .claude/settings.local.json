@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(git -C \"C:/Users/ceban/Desktop/PROGETTI/site-03-flavory\" status)",
+      "Bash(git -C:*)"
+    ]
+  }
+}

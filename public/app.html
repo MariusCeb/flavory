@@ -21,14 +21,12 @@
       cursor: none;
     }
 
-    /* ── Twemoji size ─────────────────────────────────── */
     img.emoji {
       height: 1.1em; width: 1.1em;
       vertical-align: -0.15em;
       display: inline-block;
     }
 
-    /* ── Hide cursor on touch devices ────────────────── */
     @media (hover: none) and (pointer: coarse) {
       .custom-cursor { display: none !important; }
       body, * { cursor: auto !important; }
@@ -96,11 +94,38 @@
     .nav-btn:hover { border-color: #b22222; color: #fff; }
     .nav-btn.danger:hover { border-color: rgba(255,100,100,0.5); color: rgba(255,150,150,0.9); }
 
-    /* On mobile: hide portal button from navbar */
     @media (max-width: 640px) {
-      #btnPortal { display: none !important; }
       .user-greeting { display: none; }
       .app-nav { padding: 0 4%; }
+    }
+
+    /* ── App Tabs ─────────────────────────────────────── */
+    .app-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(178,34,34,0.15);
+      background: rgba(10,1,1,0.92);
+      padding: 0 5%;
+      position: sticky;
+      top: 64px;
+      z-index: 99;
+    }
+
+    .app-tab {
+      padding: 14px 22px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.4);
+      font-family: 'Lora', serif;
+      font-size: 0.88em;
+      cursor: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      margin-bottom: -1px;
+    }
+    .app-tab:hover { color: rgba(255,255,255,0.7); }
+    .app-tab.active {
+      color: #fff;
+      border-bottom-color: #b22222;
     }
 
     /* ── Free trial banner ───────────────────────────── */
@@ -157,18 +182,24 @@
     .toast.success { background: #0f4c1e; color: #6fcf97; border: 1px solid #1a7f35; }
     .toast.error   { background: #4c0f0f; color: #eb5757; border: 1px solid #7f1a1a; }
 
-    /* ── Subscription gate ──────────────────────────── */
-    #subscriptionGate {
-      min-height: calc(100vh - 64px);
+    /* ── Abbonamento View ────────────────────────────── */
+    #abbonamentoView {
+      min-height: calc(100vh - 128px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 60px 5%;
-      flex-direction: column;
+    }
+    #abbonamentoView.hidden { display: none; }
+
+    .abbo-content {
+      width: 100%;
+      max-width: 720px;
       text-align: center;
     }
-    #subscriptionGate.hidden { display: none; }
+    .abbo-content.hidden { display: none; }
 
+    /* Pricing cards (same as old gate) */
     .gate-icon { font-size: 3.5em; margin-bottom: 24px; }
     .gate-title { font-size: 2em; margin-bottom: 14px; color: #fff; }
     .gate-subtitle {
@@ -176,10 +207,9 @@
       font-size: 0.98em;
       color: rgba(255,255,255,0.5);
       max-width: 440px;
+      margin: 0 auto 52px;
       line-height: 1.7;
-      margin-bottom: 52px;
     }
-
     .gate-plans {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -187,7 +217,6 @@
       max-width: 720px;
       width: 100%;
     }
-
     .gate-card {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.1);
@@ -196,9 +225,10 @@
       text-align: center;
       transition: all 0.3s ease;
       cursor: none;
+      position: relative;
     }
     .gate-card:hover { border-color: rgba(178,34,34,0.5); background: rgba(178,34,34,0.06); transform: translateY(-6px); }
-    .gate-card.highlighted { border-color: #b22222; background: rgba(178,34,34,0.1); position: relative; }
+    .gate-card.highlighted { border-color: #b22222; background: rgba(178,34,34,0.1); }
     .gate-badge {
       position: absolute; top: -12px; left: 50%;
       transform: translateX(-50%);
@@ -220,9 +250,51 @@
     }
     .btn-gate-subscribe:hover { background: #d62828; box-shadow: 0 8px 24px rgba(178,34,34,0.4); }
 
+    /* Management panel (subscribed) */
+    .abbo-manage-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(178,34,34,0.3);
+      border-radius: 24px;
+      padding: 60px 48px;
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .abbo-check {
+      width: 64px; height: 64px;
+      background: rgba(111,207,151,0.15);
+      border: 2px solid #6fcf97;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 1.6em; color: #6fcf97;
+    }
+    .abbo-manage-card h2 { font-size: 1.8em; color: #fff; margin-bottom: 10px; }
+    .abbo-manage-card > p {
+      font-family: 'Lora', serif;
+      font-size: 0.92em; color: rgba(255,255,255,0.5);
+      margin-bottom: 32px; line-height: 1.6;
+    }
+    .abbo-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
+    .abbo-feature {
+      font-family: 'Lora', serif;
+      font-size: 0.88em; color: rgba(255,255,255,0.65);
+      display: flex; align-items: center; gap: 10px; justify-content: center;
+    }
+    .abbo-feature-check { color: #6fcf97; }
+    .btn-portal {
+      width: 100%; padding: 16px;
+      background: transparent;
+      border: 1.5px solid rgba(178,34,34,0.5);
+      border-radius: 14px; color: rgba(255,255,255,0.8);
+      font-family: 'Playfair Display', serif; font-size: 1em; font-weight: bold;
+      cursor: none; transition: all 0.3s ease;
+    }
+    .btn-portal:hover { border-color: #b22222; color: #fff; background: rgba(178,34,34,0.08); }
+
     /* ── Main App ────────────────────────────────────── */
     #mainApp {
-      min-height: calc(100vh - 64px);
+      min-height: calc(100vh - 128px);
       display: flex;
       align-items: stretch;
     }
@@ -249,7 +321,6 @@
       font-size: 0.75em; letter-spacing: 2px; text-transform: uppercase;
       color: rgba(255,255,255,0.4); margin-bottom: 8px;
     }
-
     .field-group textarea,
     .field-group input {
       width: 100%;
@@ -270,9 +341,7 @@
       box-shadow: 0 0 0 3px rgba(178,34,34,0.12);
     }
 
-    /* ── Custom select ───────────────────────────────── */
     .custom-select { position: relative; user-select: none; }
-
     .select-trigger {
       width: 100%;
       background: rgba(255,255,255,0.04);
@@ -285,14 +354,12 @@
     }
     .select-trigger:hover { border-color: rgba(255,255,255,0.22); }
     .custom-select.open .select-trigger { border-color: #b22222; box-shadow: 0 0 0 3px rgba(178,34,34,0.12); }
-
     .select-arrow {
       width: 16px; height: 16px; flex-shrink: 0;
       fill: none; stroke: rgba(255,255,255,0.35); stroke-width: 2;
       transition: transform 0.22s ease;
     }
     .custom-select.open .select-arrow { transform: rotate(180deg); }
-
     .select-options {
       position: absolute;
       top: calc(100% + 6px); left: 0; right: 0;
@@ -305,7 +372,6 @@
       box-shadow: 0 16px 40px rgba(0,0,0,0.55);
     }
     .custom-select.open .select-options { display: block; }
-
     .select-option {
       padding: 14px 18px;
       font-family: 'Lora', serif; font-size: 0.9em;
@@ -317,7 +383,6 @@
     .select-option:hover { background: rgba(178,34,34,0.1); color: #fff; }
     .select-option.selected { color: #b22222; background: rgba(178,34,34,0.07); }
 
-    /* ── Recommend button ────────────────────────────── */
     .btn-recommend {
       width: 100%; padding: 16px;
       background: #b22222; color: #fff; border: none; border-radius: 14px;
@@ -332,12 +397,10 @@
     }
     .btn-recommend:disabled { opacity: 0.5; }
 
-    /* ── Result panel ────────────────────────────────── */
     .result-panel {
       flex: 1; display: flex; align-items: center; justify-content: center;
       padding: 48px; overflow-y: auto;
     }
-
     .result-empty { text-align: center; color: rgba(255,255,255,0.2); }
     .result-empty .big-icon { font-size: 5em; margin-bottom: 20px; display: block; opacity: 0.25; }
     .result-empty p { font-family: 'Lora', serif; font-size: 1em; }
@@ -358,7 +421,6 @@
 
     .result-content { width: 100%; max-width: 700px; }
     .result-content.hidden { display: none; }
-
     .result-card {
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(178,34,34,0.2);
@@ -366,7 +428,6 @@
       animation: fadeIn 0.5s ease;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-
     .result-card h2 { font-size: 1.2em; color: #fff; margin: 28px 0 10px; border-bottom: 1px solid rgba(178,34,34,0.2); padding-bottom: 8px; }
     .result-card h2:first-child { margin-top: 0; }
     .result-card p { font-family: 'Lora', serif; font-size: 0.95em; color: rgba(255,255,255,0.8); line-height: 1.75; margin-bottom: 8px; }
@@ -383,38 +444,18 @@
     }
     .btn-new-search:hover { border-color: #b22222; color: #fff; background: rgba(178,34,34,0.08); }
 
-    /* ── Portal mobile link (bottom of page) ─────────── */
-    .portal-mobile {
-      display: none;
-      text-align: center;
-      padding: 28px 20px 16px;
-      border-top: 1px solid rgba(255,255,255,0.04);
-    }
-    .portal-mobile button {
-      background: none; border: none;
-      color: rgba(255,255,255,0.25);
-      font-family: 'Lora', serif; font-size: 0.78em;
-      text-decoration: underline; cursor: none;
-      transition: color 0.2s;
-    }
-    .portal-mobile button:hover { color: rgba(255,255,255,0.5); }
-
-    @media (max-width: 640px) {
-      .portal-mobile { display: block; }
-    }
-
     /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 900px) {
       #mainApp { flex-direction: column; }
       .form-panel { width: 100%; border-right: none; border-bottom: 1px solid rgba(178,34,34,0.12); min-width: unset; }
       .result-panel { padding: 32px 20px; }
-      .gate-plans { grid-template-columns: 1fr; max-width: 360px; }
+      .gate-plans { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
     }
-
     @media (max-width: 480px) {
       .form-panel { padding: 28px 18px; }
       .result-panel { padding: 24px 16px; }
       .result-card { padding: 24px 20px; }
+      .abbo-manage-card { padding: 40px 24px; }
     }
   </style>
 </head>
@@ -426,12 +467,15 @@
     <a href="/" class="app-nav-logo">FLAVORY<span>.</span></a>
     <div class="app-nav-right">
       <span class="user-greeting" id="userGreeting"></span>
-      <button class="nav-btn" id="btnPortal" onclick="openPortal()" style="display:none">
-        Gestisci abbonamento
-      </button>
       <button class="nav-btn danger" onclick="logout()">Esci</button>
     </div>
   </nav>
+
+  <!-- ── APP TABS ───────────────────────────────────── -->
+  <div class="app-tabs" id="appTabs" style="display:none">
+    <button class="app-tab active" id="tabSommelier" onclick="showTab('sommelier')">Sommelier</button>
+    <button class="app-tab" id="tabAbbonamento" onclick="showTab('abbonamento')">Abbonamento</button>
+  </div>
 
   <!-- ── FREE TRIAL BANNER ──────────────────────────── -->
   <div class="trial-banner hidden" id="trialBanner">
@@ -443,42 +487,67 @@
       </div>
       <span id="trialText">3 richieste gratuite rimaste</span>
     </div>
-    <button class="btn-upgrade-small" onclick="startCheckout('monthly')">Sblocca illimitato</button>
+    <button class="btn-upgrade-small" onclick="showTab('abbonamento')">Sblocca illimitato</button>
   </div>
 
   <!-- ── TOAST ─────────────────────────────────────── -->
   <div class="toast" id="toast"></div>
 
-  <!-- ── SUBSCRIPTION GATE ──────────────────────────── -->
-  <div id="subscriptionGate" class="hidden">
-    <div class="gate-icon">🔒</div>
-    <h2 class="gate-title">Sblocca il tuo Sommelier AI</h2>
-    <p class="gate-subtitle">
-      Hai esaurito le 3 richieste gratuite. Abbonati per continuare con consigli illimitati.
-    </p>
-    <div class="gate-plans">
-      <div class="gate-card">
-        <p class="gate-plan-name">Mensile</p>
-        <div class="gate-price"><sup>€</sup>9<span style="font-size:0.45em">,99</span></div>
-        <p class="gate-period">al mese</p>
-        <p class="gate-saving">&nbsp;</p>
-        <button class="btn-gate-subscribe" onclick="startCheckout('monthly')">Abbonati mensile</button>
-      </div>
-      <div class="gate-card highlighted">
-        <span class="gate-badge">Più conveniente</span>
-        <p class="gate-plan-name">Annuale</p>
-        <div class="gate-price"><sup>€</sup>79</div>
-        <p class="gate-period">all'anno · €6,58/mese</p>
-        <p class="gate-saving">2 mesi gratis — risparmi €40,88!</p>
-        <button class="btn-gate-subscribe" onclick="startCheckout('yearly')">Abbonati annuale</button>
+  <!-- ── ABBONAMENTO VIEW ───────────────────────────── -->
+  <div id="abbonamentoView" class="hidden">
+
+    <!-- Pricing (not subscribed) -->
+    <div id="abboPricing" class="abbo-content hidden">
+      <div class="gate-icon">🍷</div>
+      <h2 class="gate-title">Sblocca il tuo Sommelier AI</h2>
+      <p class="gate-subtitle">
+        Abbonati per consigli illimitati dal tuo sommelier personale.
+      </p>
+      <div class="gate-plans">
+        <div class="gate-card">
+          <p class="gate-plan-name">Mensile</p>
+          <div class="gate-price"><sup>€</sup>9<span style="font-size:0.45em">,99</span></div>
+          <p class="gate-period">al mese</p>
+          <p class="gate-saving">&nbsp;</p>
+          <button class="btn-gate-subscribe" onclick="startCheckout('monthly')">Abbonati mensile</button>
+        </div>
+        <div class="gate-card highlighted">
+          <span class="gate-badge">Più conveniente</span>
+          <p class="gate-plan-name">Annuale</p>
+          <div class="gate-price"><sup>€</sup>79</div>
+          <p class="gate-period">all'anno · €6,58/mese</p>
+          <p class="gate-saving">2 mesi gratis — risparmi €40,88!</p>
+          <button class="btn-gate-subscribe" onclick="startCheckout('yearly')">Abbonati annuale</button>
+        </div>
       </div>
     </div>
+
+    <!-- Management (subscribed) -->
+    <div id="abboManage" class="abbo-content hidden">
+      <div class="abbo-manage-card">
+        <div class="abbo-check">✓</div>
+        <h2>Piano attivo</h2>
+        <p>Hai accesso illimitato al tuo Sommelier AI personale.</p>
+        <div class="abbo-features">
+          <div class="abbo-feature">
+            <span class="abbo-feature-check">✓</span> Consigli illimitati
+          </div>
+          <div class="abbo-feature">
+            <span class="abbo-feature-check">✓</span> Sommelier GPT-4o
+          </div>
+          <div class="abbo-feature">
+            <span class="abbo-feature-check">✓</span> Abbinamenti personalizzati per zona
+          </div>
+        </div>
+        <button class="btn-portal" onclick="openPortal()">Gestisci abbonamento →</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- ── MAIN APP ────────────────────────────────────── -->
   <main id="mainApp" class="hidden">
 
-    <!-- Form panel -->
     <div class="form-panel">
       <h1 class="form-title">Il tuo<br>Sommelier <span style="color:#b22222">AI</span></h1>
       <p class="form-subtitle">Descrivi il pasto e ti consiglio il vino perfetto, con spiegazioni da esperto.</p>
@@ -513,7 +582,6 @@
       </button>
     </div>
 
-    <!-- Result panel -->
     <div class="result-panel">
       <div class="result-empty" id="resultEmpty">
         <span class="big-icon">🍷</span>
@@ -531,16 +599,11 @@
 
   </main>
 
-  <!-- Portal link for mobile (bottom of page) -->
-  <div class="portal-mobile" id="portalMobile" style="display:none">
-    <button onclick="openPortal()">Gestisci abbonamento</button>
-  </div>
-
   <script>
     const FREE_LIMIT = 3;
 
-    // ── Custom cursor (desktop only) ───────────────────
-    const cursor = document.getElementById('cursor');
+    // ── Custom cursor ───────────────────────────────────
+    const cursor  = document.getElementById('cursor');
     const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     if (!isTouch) {
       document.addEventListener('mousemove', e => {
@@ -576,7 +639,6 @@
     function toggleSelect() {
       document.getElementById('budgetDropdown').classList.toggle('open');
     }
-
     function selectOption(el) {
       selectedBudget = el.dataset.value;
       document.querySelector('.select-label').textContent = el.textContent;
@@ -584,17 +646,15 @@
       el.classList.add('selected');
       document.getElementById('budgetDropdown').classList.remove('open');
     }
-
-    // Close dropdown when clicking outside
     document.addEventListener('click', e => {
       const dd = document.getElementById('budgetDropdown');
-      if (!dd.contains(e.target)) dd.classList.remove('open');
+      if (dd && !dd.contains(e.target)) dd.classList.remove('open');
     });
 
     // ── Free trial UI ──────────────────────────────────
     function updateTrialBanner(used) {
       const remaining = FREE_LIMIT - used;
-      const banner = document.getElementById('trialBanner');
+      const banner    = document.getElementById('trialBanner');
       if (remaining <= 0) { banner.classList.add('hidden'); return; }
       banner.classList.remove('hidden');
       document.getElementById('trialText').textContent =
@@ -605,19 +665,24 @@
       }
     }
 
+    // ── Tab switching ──────────────────────────────────
+    function showTab(tab) {
+      const isSommelier = tab === 'sommelier';
+      document.getElementById('tabSommelier').classList.toggle('active', isSommelier);
+      document.getElementById('tabAbbonamento').classList.toggle('active', !isSommelier);
+      document.getElementById('mainApp').classList.toggle('hidden', !isSommelier);
+      document.getElementById('abbonamentoView').classList.toggle('hidden', isSommelier);
+      if (!isSommelier) parseTwemoji(document.getElementById('abbonamentoView'));
+    }
+
     // ── Auth + init ────────────────────────────────────
     let currentUser = null;
 
     async function init() {
-      const params = new URLSearchParams(location.search);
-      if (params.get('success') === '1') {
-        showToast('Abbonamento attivato! Benvenuto.', 'success');
-        history.replaceState({}, '', '/app.html');
-      }
-      if (params.get('cancelled') === '1') {
-        showToast('Pagamento annullato — riprova quando vuoi.', 'error');
-        history.replaceState({}, '', '/app.html');
-      }
+      const params     = new URLSearchParams(location.search);
+      const didSuccess = params.get('success')   === '1';
+      const didCancel  = params.get('cancelled') === '1';
+      if (didSuccess || didCancel) history.replaceState({}, '', '/app.html');
 
       try {
         const res = await fetch('/api/auth/me');
@@ -627,27 +692,30 @@
 
       document.getElementById('userGreeting').textContent = `Ciao, ${currentUser.name}`;
 
-      const used = currentUser.free_requests_used || 0;
+      const used         = currentUser.free_requests_used || 0;
       const isSubscribed = currentUser.subscription_status === 'active';
 
-      if (isSubscribed) {
-        document.getElementById('btnPortal').style.display = 'block';
-        document.getElementById('portalMobile').style.display = 'block';
-        document.getElementById('mainApp').classList.remove('hidden');
-      } else if (used < FREE_LIMIT) {
-        // Free trial — show app with banner
-        document.getElementById('mainApp').classList.remove('hidden');
-        updateTrialBanner(used);
-      } else {
-        // No more free requests
-        document.getElementById('subscriptionGate').classList.remove('hidden');
-        parseTwemoji(document.getElementById('subscriptionGate'));
-      }
+      // Setup abbonamento view
+      document.getElementById('abboPricing').classList.toggle('hidden', isSubscribed);
+      document.getElementById('abboManage').classList.toggle('hidden', !isSubscribed);
 
-      if (params.get('showPricing') === '1') {
-        const pending = sessionStorage.getItem('pendingPlan');
-        if (pending) { sessionStorage.removeItem('pendingPlan'); await startCheckout(pending); }
-        history.replaceState({}, '', '/app.html');
+      // Show tabs + both views (tab logic hides one)
+      document.getElementById('appTabs').style.display = 'flex';
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('abbonamentoView').classList.remove('hidden');
+
+      if (isSubscribed) {
+        showTab(didSuccess ? 'abbonamento' : 'sommelier');
+        if (didSuccess) showToast('Abbonamento attivato! Benvenuto.', 'success');
+      } else if (used < FREE_LIMIT) {
+        updateTrialBanner(used);
+        showTab('sommelier');
+        if (didCancel) showToast('Pagamento annullato — riprova quando vuoi.', 'error');
+      } else {
+        // Trial exhausted → go straight to plans
+        document.getElementById('trialBanner').classList.add('hidden');
+        showTab('abbonamento');
+        if (didCancel) showToast('Pagamento annullato — riprova quando vuoi.', 'error');
       }
     }
 
@@ -711,16 +779,14 @@
 
         if (!res.ok) {
           if (data.needsSubscription) {
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('trialBanner').classList.add('hidden');
-            document.getElementById('subscriptionGate').classList.remove('hidden');
-            parseTwemoji(document.getElementById('subscriptionGate'));
+            document.getElementById('resultLoading').classList.add('hidden');
+            document.getElementById('resultEmpty').style.display = 'block';
+            showTab('abbonamento');
             return;
           }
           throw new Error(data.error || 'Errore sconosciuto');
         }
 
-        // Render result
         const html = marked.parse(data.recommendation || '');
         const card = document.getElementById('recommendationCard');
         card.innerHTML = html;
@@ -729,7 +795,6 @@
         document.getElementById('resultLoading').classList.add('hidden');
         document.getElementById('resultContent').classList.remove('hidden');
 
-        // Update free trial counter
         if (data.freeRequestsUsed !== undefined) {
           updateTrialBanner(data.freeRequestsUsed);
         }

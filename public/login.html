@@ -248,6 +248,47 @@
       margin: 28px 0 0;
     }
 
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-family: 'Lora', serif;
+      font-size: 0.82em;
+      color: #b22222;
+      margin-top: 10px;
+      cursor: none;
+      background: none;
+      border: none;
+      padding: 0;
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .back-link {
+      display: block;
+      font-family: 'Lora', serif;
+      font-size: 0.82em;
+      color: #888;
+      margin-top: 14px;
+      text-align: center;
+      cursor: none;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .back-link:hover { color: #b22222; }
+
+    .success-msg {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Lora', serif;
+      font-size: 0.88em;
+      margin-bottom: 16px;
+    }
+    .success-msg.hidden { display: none; }
+
     /* ── Mobile ───────────────────────────────────── */
     @media (max-width: 768px) {
       .auth-left { display: none; }
@@ -296,7 +337,25 @@
         </div>
         <div class="error-msg hidden" id="loginError"></div>
         <button type="submit" class="btn-auth" id="loginBtn">Accedi →</button>
+        <button type="button" class="forgot-link" onclick="showForgot(true)">Password dimenticata?</button>
       </form>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <div id="forgotPanel" style="display:none">
+        <p style="font-family:'Lora',serif;font-size:0.88em;color:#888;margin-bottom:20px;line-height:1.6">
+          Inserisci la tua email e ti invieremo un link per reimpostare la password.
+        </p>
+        <form onsubmit="handleForgot(event)">
+          <div class="form-group">
+            <label for="forgotEmail">Email</label>
+            <input type="email" id="forgotEmail" placeholder="la-tua@email.com" required autocomplete="email">
+          </div>
+          <div class="error-msg hidden"   id="forgotError"></div>
+          <div class="success-msg hidden" id="forgotSuccess"></div>
+          <button type="submit" class="btn-auth" id="forgotBtn">Invia link di reset →</button>
+        </form>
+        <button type="button" class="back-link" onclick="showForgot(false)">← Torna al login</button>
+      </div>
 
       <!-- REGISTER FORM -->
       <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
@@ -387,6 +446,44 @@
         btn.disabled = false;
         btn.classList.remove('btn-loading');
         btn.textContent = 'Accedi →';
+      }
+    }
+
+    // ── Forgot password ─────────────────────────────
+    function showForgot(show) {
+      document.querySelector('.auth-tabs').style.display  = show ? 'none' : 'flex';
+      document.getElementById('loginForm').style.display  = show ? 'none' : 'block';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('forgotPanel').style.display = show ? 'block' : 'none';
+      if (!show) switchTab('login');
+    }
+
+    async function handleForgot(e) {
+      e.preventDefault();
+      const btn     = document.getElementById('forgotBtn');
+      const errEl   = document.getElementById('forgotError');
+      const succEl  = document.getElementById('forgotSuccess');
+      errEl.classList.add('hidden');
+      succEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Invio in corso…';
+
+      try {
+        const res  = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: document.getElementById('forgotEmail').value })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        succEl.textContent = 'Email inviata! Controlla la tua casella (anche spam).';
+        succEl.classList.remove('hidden');
+        btn.textContent = 'Inviata ✓';
+      } catch (ex) {
+        errEl.textContent = ex.message || 'Errore — riprova';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Invia link di reset →';
       }
     }
 

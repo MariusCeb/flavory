@@ -9,6 +9,8 @@ const { OpenAI }   = require('openai');
 const cookieParser = require('cookie-parser');
 const path         = require('path');
 require('dotenv').config();
+const crypto     = require('crypto');
+const nodemailer = require('nodemailer');
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 const app    = express();
@@ -37,6 +39,34 @@ db.exec(`
 `);
 // Migration: add free_requests_used column for existing DBs
 try { db.exec('ALTER TABLE users ADD COLUMN free_requests_used INTEGER DEFAULT 0'); } catch {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS password_resets (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL,
+    token      TEXT    NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used       INTEGER DEFAULT 0
+  )
+`);
+
+// ─── Mail helper ──────────────────────────────────────────────────────────────
+function sendMail({ to, subject, html }) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+    console.warn('SMTP not configured — skipping email');
+    return Promise.resolve();
+  }
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT) || 587,
+    secure: false,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+  });
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to, subject, html
+  });
+}
 
 // ─── Stripe webhook (MUST be before express.json) ────────────────────────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleWebhook);
@@ -215,7 +245,7 @@ async function handleWebhook(req, res) {
       const session = event.data.object;
       const userId  = session.metadata?.user_id;
       if (userId) {
-        db.prepare('UPDATE users SET subscription_status = ?, subscription_id = ? WHERE id = ?')
+        db.prepare('UPDATE users SET subscription_status = ?, subscription_id = ?, free_requests_used = 0 WHERE id = ?')
           .run('active', session.subscription, userId);
       }
       break;
@@ -244,6 +274,51 @@ async function handleWebhook(req, res) {
 
   res.json({ received: true });
 }
+
+// ─── Password reset ───────────────────────────────────────────────────────────
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body ?? {};
+  if (!email) return res.status(400).json({ error: 'Email richiesta' });
+
+  const user = db.prepare('SELECT id, name FROM users WHERE email = ?').get(email.trim().toLowerCase());
+  if (!user) return res.json({ success: true }); // no enumeration
+
+  db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(user.id);
+
+  const token     = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  db.prepare('INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)')
+    .run(user.id, token, expiresAt);
+
+  const resetUrl = `${baseUrl()}/reset-password.html?token=${token}`;
+  try {
+    await sendMail({
+      to:      email,
+      subject: 'Recupero password — FLAVORY.',
+      html:    `<p>Ciao ${user.name},</p>
+                <p>Clicca il link per reimpostare la tua password (valido 1 ora):</p>
+                <p><a href="${resetUrl}">${resetUrl}</a></p>
+                <p>Se non hai richiesto il reset, ignora questa email.</p>`
+    });
+  } catch (err) { console.error('Email error:', err); }
+
+  res.json({ success: true });
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body ?? {};
+  if (!token || !password) return res.status(400).json({ error: 'Dati mancanti' });
+  if (password.length < 8) return res.status(400).json({ error: 'La password deve avere almeno 8 caratteri' });
+
+  const record = db.prepare('SELECT * FROM password_resets WHERE token = ? AND used = 0').get(token);
+  if (!record || new Date(record.expires_at) < new Date())
+    return res.status(400).json({ error: 'Link non valido o scaduto — richiedine uno nuovo' });
+
+  const hashed = await bcrypt.hash(password, 12);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashed, record.user_id);
+  db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(record.id);
+  res.json({ success: true });
+});
 
 // ─── Wine recommendation ──────────────────────────────────────────────────────
 app.post('/api/recommend', authenticate, checkAccess, async (req, res) => {
