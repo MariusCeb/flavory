@@ -74,7 +74,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handl
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 // Static files: frames and logo live at project root, pages in public/
 app.use('/frames', express.static(path.join(__dirname, 'frames')));
@@ -464,6 +464,8 @@ REGOLE FONDAMENTALI PER L'ACCURATEZZA:
     console.error('OpenAI error:', err);
     if (err.status === 429)
       return res.status(429).json({ error: 'Troppe richieste simultanee. Riprova tra un momento.' });
+    if (err.message?.includes('did not match the expected pattern') || err.message?.includes('invalid_image_url'))
+      return res.status(400).json({ error: 'Foto non leggibile da GPT-4o. Riprova con una foto JPEG o PNG.' });
     res.status(500).json({ error: 'Errore nel generare il consiglio. Riprova.' });
   }
 });
