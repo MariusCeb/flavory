@@ -1,0 +1,14 @@
+{
+  "name": "FLAVORY. — Il tuo Sommelier AI",
+  "short_name": "Flavory",
+  "description": "Il tuo sommelier AI personale. Il vino perfetto per ogni pasto.",
+  "start_url": "/app.html",
+  "display": "standalone",
+  "background_color": "#0a0101",
+  "theme_color": "#b22222",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/flavory-logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/flavory-logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

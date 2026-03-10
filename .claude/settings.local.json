@@ -11,7 +11,8 @@
       "Bash(powershell -Command \"cd ''C:\\\\Users\\\\ceban\\\\Desktop\\\\PROGETTI\\\\site-03-flavory''; npm install\")",
       "Bash(cmd /c \"cd /d C:\\\\Users\\\\ceban\\\\Desktop\\\\PROGETTI\\\\site-03-flavory && npm install\")",
       "Bash(cmd /c \"cd /d C:\\\\Users\\\\ceban\\\\Desktop\\\\PROGETTI\\\\site-03-flavory && npm install 2>&1\")",
-      "Bash(node --check:*)"
+      "Bash(node --check:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

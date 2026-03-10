@@ -6,6 +6,8 @@
   <title>FLAVORY. — Il tuo Sommelier AI</title>
   <meta name="description" content="Flavory usa l'AI per consigliarti il vino perfetto in base al tuo menu, alla tua zona e dove vuoi acquistarlo.">
   <link rel="icon" type="image/png" href="/flavory-logo.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#b22222">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
 
   <style>
@@ -569,6 +571,86 @@
       .main-title { font-size: 1.8em; letter-spacing: 1px; }
     }
 
+    /* ── Demo section ────────────────────────────────── */
+    .demo-section { padding: 90px 5% 80px; background: #0e0303; }
+    .demo-wrap { max-width: 1100px; margin: 0 auto; }
+    .demo-query {
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(178,34,34,0.2);
+      border-radius: 14px; padding: 18px 28px; margin-bottom: 28px;
+    }
+    .demo-query-label {
+      font-family: 'Lora', serif; font-size: 0.7em; letter-spacing: 2px;
+      text-transform: uppercase; color: rgba(255,255,255,0.25); white-space: nowrap;
+    }
+    .demo-query-text { flex: 1; font-style: italic; color: rgba(255,255,255,0.8); font-size: 0.98em; }
+    .demo-query-meta { font-family: 'Lora', serif; font-size: 0.8em; color: rgba(255,255,255,0.3); white-space: nowrap; }
+    .demo-grid { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 16px; }
+    .demo-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(178,34,34,0.18);
+      border-radius: 16px; padding: 26px;
+    }
+    .demo-card.demo-featured { border-color: rgba(178,34,34,0.45); background: rgba(178,34,34,0.06); }
+    .demo-card h4 { font-size: 0.92em; color: #fff; margin-bottom: 4px; line-height: 1.4; }
+    .demo-producer { font-family: 'Lora', serif; font-size: 0.75em; color: rgba(178,34,34,0.8); margin-bottom: 14px; }
+    .demo-row-label {
+      font-family: 'Lora', serif; font-size: 0.68em; letter-spacing: 1px;
+      text-transform: uppercase; color: rgba(255,255,255,0.28); margin: 12px 0 5px;
+    }
+    .demo-card p { font-family: 'Lora', serif; font-size: 0.82em; color: rgba(255,255,255,0.55); line-height: 1.65; }
+    .demo-card-footer {
+      margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Lora', serif; font-size: 0.74em; color: rgba(255,255,255,0.28);
+      gap: 8px; flex-wrap: wrap;
+    }
+    .demo-price { color: rgba(255,255,255,0.5); font-weight: bold; }
+    @media (max-width: 900px) {
+      .demo-grid { grid-template-columns: 1fr; }
+      .demo-query { flex-direction: column; gap: 6px; align-items: flex-start; }
+    }
+
+    /* ── FAQ section ─────────────────────────────────── */
+    .faq-section { padding: 100px 5%; background: #fff; }
+    .faq-list { max-width: 720px; margin: 48px auto 0; }
+    .faq-item { border-bottom: 1px solid rgba(26,5,5,0.08); }
+    .faq-q {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 0; background: none; border: none;
+      font-family: 'Playfair Display', serif; font-size: 1.05em;
+      color: #1a0505; cursor: pointer; text-align: left; gap: 16px;
+    }
+    .faq-q:hover { color: #b22222; }
+    .faq-arrow { color: #b22222; flex-shrink: 0; transition: transform 0.25s ease; font-size: 0.85em; }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+    .faq-a {
+      font-family: 'Lora', serif; font-size: 0.93em; color: #666; line-height: 1.75;
+      max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.3s ease;
+      padding-bottom: 0;
+    }
+    .faq-item.open .faq-a { max-height: 300px; padding-bottom: 22px; }
+
+    /* ── Cookie banner ───────────────────────────────── */
+    .cookie-banner {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9000;
+      background: #1a0505; border-top: 1px solid rgba(178,34,34,0.25);
+      padding: 16px 5%; display: flex; align-items: center;
+      justify-content: space-between; gap: 20px; flex-wrap: wrap;
+      font-family: 'Lora', serif; font-size: 0.85em; color: rgba(255,255,255,0.6);
+    }
+    .cookie-banner a { color: #b22222; text-decoration: none; }
+    .cookie-banner a:hover { text-decoration: underline; }
+    .cookie-actions { display: flex; gap: 10px; flex-shrink: 0; }
+    .btn-cookie {
+      padding: 8px 20px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.2);
+      background: transparent; color: rgba(255,255,255,0.7);
+      font-family: 'Lora', serif; font-size: 0.9em; cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-cookie:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+    .btn-cookie.primary { background: #b22222; border-color: #b22222; color: #fff; }
+    .btn-cookie.primary:hover { background: #d62828; }
+    .cookie-banner.hidden { display: none; }
+
     /* ── Wave dividers ───────────────────────────────── */
     .wave-sep {
       display: block;
@@ -611,7 +693,7 @@
   <!-- ── HERO (preserved) ──────────────────────────── -->
   <div class="white-section" id="home">
     <h1 class="main-title">FLAVORY<span class="span-red">.</span></h1>
-    <p class="subtitle">Where Every Flavor Finds Its Perfect Pairing</p>
+    <p class="subtitle">Il vino perfetto per ogni pasto, ogni sera.</p>
   </div>
 
   <!-- ── WAVE: hero #fff2f2 → features #fff ──────────── -->
@@ -722,6 +804,62 @@
     </svg>
   </div>
 
+  <!-- ── DEMO: Esempio reale ─────────────────────────── -->
+  <section class="demo-section">
+    <div class="demo-wrap">
+      <span class="section-label" style="color:rgba(178,34,34,0.85)">Esempio dal vivo</span>
+      <h2 class="section-title" style="color:#fff;margin-bottom:12px">Così appare il tuo consiglio</h2>
+      <p class="section-subtitle" style="color:rgba(255,255,255,0.4);margin-bottom:40px">Inserisci il menu, ricevi tre abbinamenti da sommelier — con spiegazioni, prezzi e dove trovarlo.</p>
+
+      <div class="demo-query">
+        <span class="demo-query-label">Menu inserito</span>
+        <span class="demo-query-text">Bistecca alla fiorentina, patate al forno con rosmarino</span>
+        <span class="demo-query-meta">📍 Firenze &nbsp;·&nbsp; 💰 Budget €40</span>
+      </div>
+
+      <div class="demo-grid">
+        <div class="demo-card demo-featured">
+          <h4>🍷 Vino 1 — Brunello di Montalcino DOCG</h4>
+          <p class="demo-producer">Biondi-Santi · annata 2018</p>
+          <div class="demo-row-label">🤝 Perché questo abbinamento</div>
+          <p>La struttura tannica del Brunello esalta la fibrosità della bistecca, bilanciando la grassezza con elegante astringenza e persistenza aromatica.</p>
+          <div class="demo-row-label">📝 Caratteristiche</div>
+          <p>Ciliegia matura, tabacco, spezie. Corpo pieno, tannini vellutati. Servire a 18°C.</p>
+          <div class="demo-card-footer">
+            <span>📍 Enoteca Borghini, Firenze · Esselunga</span>
+            <span class="demo-price">💰 €42–58</span>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <h4>🍷 Vino 2 — Chianti Classico Gran Selezione DOCG</h4>
+          <p class="demo-producer">Antinori Tignanello · annata 2020</p>
+          <div class="demo-row-label">🤝 Perché questo abbinamento</div>
+          <p>Il Sangiovese toscano è l'abbinamento regionale per eccellenza con la fiorentina: acidità vivace che pulisce il palato ad ogni boccone.</p>
+          <div class="demo-row-label">📝 Caratteristiche</div>
+          <p>Visciola, spezie dolci, erbaceo fine. Medio corpo, fresco. Servire a 17°C.</p>
+          <div class="demo-card-footer">
+            <span>📍 Coop, Conad</span>
+            <span class="demo-price">💰 €22–32</span>
+          </div>
+        </div>
+
+        <div class="demo-card">
+          <h4>🍷 Vino 3 — Morellino di Scansano DOCG</h4>
+          <p class="demo-producer">Moris Farms · annata 2021</p>
+          <div class="demo-row-label">🤝 Perché questo abbinamento</div>
+          <p>Versione più accessibile del Sangiovese toscano, con fruttato immediato e tannini morbidi — ideale per chi preferisce non spendere molto.</p>
+          <div class="demo-row-label">📝 Caratteristiche</div>
+          <p>Frutti rossi, macchia mediterranea. Corpo medio, equilibrato. Servire a 16°C.</p>
+          <div class="demo-card-footer">
+            <span>📍 Esselunga, Carrefour</span>
+            <span class="demo-price">💰 €12–18</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ── HOW IT WORKS ────────────────────────────────── -->
   <section class="how-section" id="come-funziona">
     <div class="section-wrap">
@@ -816,8 +954,50 @@
     </div>
   </section>
 
-  <!-- ── WAVE: pricing #fff2f2 → cta #1a0505 ─────────── -->
+  <!-- ── WAVE: pricing #fff2f2 → faq #fff ────────────── -->
   <div class="wave-sep" style="background:#fff2f2">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,38 C180,80 380,5 580,42 C780,76 960,12 1160,50 C1300,76 1390,28 1440,44 L1440,90 L0,90 Z" fill="#fff"/>
+    </svg>
+  </div>
+
+  <!-- ── FAQ ───────────────────────────────────────────── -->
+  <section class="faq-section" id="faq">
+    <div class="section-wrap">
+      <span class="section-label">FAQ</span>
+      <h2 class="section-title">Domande frequenti</h2>
+      <p class="section-subtitle">Tutto quello che devi sapere su Flavory.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">L'AI inventa i vini o cita produttori reali? <span class="faq-arrow">↓</span></button>
+        <div class="faq-a">Flavory usa GPT-4o con istruzioni precise per citare solo vini, denominazioni (DOC, DOCG, IGT) e produttori che esistono davvero. Se non è certo di un'informazione, usa descrizioni generiche invece di inventare nomi.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Funziona anche per vini stranieri? <span class="faq-arrow">↓</span></button>
+        <div class="faq-a">Sì. Flavory è specializzato in vini italiani ma conosce anche i principali produttori francesi, spagnoli, argentini e di altre regioni. Per etichette molto di nicchia potrebbe essere meno preciso.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Quante richieste ho con il piano gratuito? <span class="faq-arrow">↓</span></button>
+        <div class="faq-a">Il piano gratuito include 3 consigli di prova — più che sufficienti per capire la qualità del servizio. Dopo puoi abbonarti per consigli illimitati con piano mensile o annuale.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Posso cancellare l'abbonamento quando voglio? <span class="faq-arrow">↓</span></button>
+        <div class="faq-a">Sì, puoi cancellare in qualsiasi momento dalla sezione "Abbonamento" nell'app. La cancellazione è immediata e non ci sono penali o costi nascosti.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Posso fotografare la carta dei vini al ristorante? <span class="faq-arrow">↓</span></button>
+        <div class="faq-a">Sì! C'è un'icona camera direttamente nel campo di testo dell'app. Scatta una foto alla carta dei vini e Flavory ti suggerisce quale scegliere in base ai piatti che ordinerai.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">I prezzi indicati sono affidabili? <span class="faq-arrow">↓</span></button>
+        <div class="faq-a">I prezzi sono orientativi, basati sul mercato italiano attuale. Possono variare in base al punto vendita, all'annata e alla disponibilità locale. Considera sempre una certa variabilità.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WAVE: faq #fff → cta #1a0505 ─────────────────── -->
+  <div class="wave-sep" style="background:#fff">
     <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0,32 C140,70 320,6 520,44 C720,80 920,16 1120,54 C1270,82 1380,30 1440,46 L1440,90 L0,90 Z" fill="#1a0505"/>
     </svg>
@@ -874,7 +1054,34 @@
     </div>
   </footer>
 
+  <!-- ── COOKIE BANNER ──────────────────────────────── -->
+  <div class="cookie-banner hidden" id="cookieBanner">
+    <p>Usiamo cookie tecnici per il funzionamento del sito. <a href="#">Cookie Policy</a></p>
+    <div class="cookie-actions">
+      <button class="btn-cookie" onclick="setCookieConsent('minimal')">Solo necessari</button>
+      <button class="btn-cookie primary" onclick="setCookieConsent('all')">Accetta tutti</button>
+    </div>
+  </div>
+
   <script>
+    // ── Cookie banner ─────────────────────────────────
+    (function() {
+      if (!localStorage.getItem('cookie_consent'))
+        document.getElementById('cookieBanner').classList.remove('hidden');
+    })();
+    function setCookieConsent(type) {
+      localStorage.setItem('cookie_consent', type);
+      document.getElementById('cookieBanner').classList.add('hidden');
+    }
+
+    // ── FAQ accordion ─────────────────────────────────
+    function toggleFaq(btn) {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
     // ── Custom cursor ─────────────────────────────────
     const cursor = document.getElementById('cursor');
     document.addEventListener('mousemove', e => {
