@@ -136,41 +136,6 @@
       padding-left: 8%;
     }
 
-    /* ── VIDEO / FRAME SECTION (preserved exactly) ──── */
-    .video-section {
-      position: relative;
-      height: 150vh;
-      overflow: hidden;
-    }
-
-    #frameCanvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: -1;
-      pointer-events: none;
-      will-change: contents;
-    }
-
-    .content {
-      position: relative;
-      z-index: 1;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 100vh;
-      padding: 0 5%;
-    }
-
-    .left-content, .right-content {
-      width: 25%;
-      opacity: 0;
-      transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    .left-content  { transform: translateX(-100%); }
-    .right-content { transform: translateX(100%); text-align: right; padding-top: 45%; }
-    .show { opacity: 1; transform: translateX(0%); }
 
     /* ── FEATURES SECTION ───────────────────────────── */
     .features-section {
@@ -630,25 +595,6 @@
     <p class="subtitle">Where Every Flavor Finds Its Perfect Pairing</p>
   </div>
 
-  <!-- ── VIDEO / FRAME SECTION (preserved) ─────────── -->
-  <div class="video-section">
-    <canvas id="frameCanvas"></canvas>
-    <div class="content">
-      <div class="left-content hidden">
-        <h1 style="line-height: 5; font-size: 42px;">L'arte del vino?</h1>
-        <p style="line-height: 2.3; font-size: 22px;">è un equilibrio tra <span class="span-red">tradizione</span>,
-          <span class="span-red">passione</span> e <span class="span-red">creatività</span>, capace di trasformare
-          semplici uve in espressioni uniche di territorio, cultura e storia.</p>
-      </div>
-      <div class="right-content hidden">
-        <h1 style="line-height: 4; font-size: 42px;">FLAVORY</h1>
-        <p style="line-height: 2.3; font-size: 22px;">è l'<span class="span-red">abbinamento</span> perfetto tra
-          <span class="span-red">cibo</span> e <span class="span-red">vino</span>,
-          reso accessibile a tutti grazie all'intelligenza artificiale.</p>
-      </div>
-    </div>
-  </div>
-
   <!-- ── FEATURES ───────────────────────────────────── -->
   <section class="features-section" id="features">
     <div class="features-inner">
@@ -891,75 +837,6 @@
     window.addEventListener('scroll', () => {
       navbar.classList.toggle('scrolled', window.scrollY > 50);
     });
-
-    // ── Frame animation — canvas + lerp ──────────────
-    const totalFrames  = 300;
-    const framePath    = i => `/frames/frame_${String(i).padStart(4, '0')}.png`;
-    const canvas       = document.getElementById('frameCanvas');
-    const ctx          = canvas.getContext('2d');
-    const videoSection = document.querySelector('.video-section');
-
-    // Set canvas to actual pixel dimensions (handles retina too)
-    function resizeCanvas() {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas, { passive: true });
-
-    // Preload all frames
-    const images = new Array(totalFrames);
-    for (let i = 0; i < totalFrames; i++) {
-      const img = new Image();
-      img.src = framePath(i + 1);
-      images[i] = img;
-    }
-
-    function drawFrame(img) {
-      if (!img || !img.complete || !img.naturalWidth) return;
-      const cw = canvas.width, ch = canvas.height;
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-      const x = (cw - img.naturalWidth  * scale) / 2;
-      const y = (ch - img.naturalHeight * scale) / 2;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale);
-    }
-
-    // Draw first frame as soon as it loads
-    images[0].onload = () => drawFrame(images[0]);
-
-    let smoothFrame  = 0;   // lerp'd current frame
-    let lastDrawn    = -1;  // avoid redrawing the same frame
-
-    function updateFrame() {
-      // Calculate progress only within the video section
-      const sectionTop    = videoSection.offsetTop;
-      const scrollLength  = videoSection.offsetHeight - window.innerHeight;
-      const scrolled      = window.scrollY - sectionTop;
-      const progress      = Math.max(0, Math.min(1, scrolled / scrollLength));
-      const targetFrame   = Math.min(totalFrames - 1, Math.floor(progress * totalFrames));
-
-      // Lerp toward target — 0.14 = gentle ease-out feel
-      smoothFrame += (targetFrame - smoothFrame) * 0.14;
-      const frameIndex = Math.round(smoothFrame);
-
-      if (frameIndex !== lastDrawn) {
-        drawFrame(images[frameIndex]);
-        lastDrawn = frameIndex;
-      }
-
-      requestAnimationFrame(updateFrame);
-    }
-    requestAnimationFrame(updateFrame);
-
-    // ── Intersection observer (preserved) ─────────────
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => e.isIntersecting
-        ? e.target.classList.add('show')
-        : e.target.classList.remove('show')
-      );
-    });
-    document.querySelectorAll('.hidden').forEach(el => observer.observe(el));
 
     // ── Auth-aware navbar ─────────────────────────────
     async function checkAuth() {

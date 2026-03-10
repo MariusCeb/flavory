@@ -788,18 +788,19 @@
       const params     = new URLSearchParams(location.search);
       const didSuccess = params.get('success')   === '1';
       const didCancel  = params.get('cancelled') === '1';
+      const sessionId  = params.get('session_id');
       if (didSuccess || didCancel) history.replaceState({}, '', '/app.html');
 
       try {
-        // If coming back from Stripe, poll until webhook activates subscription (max ~9s)
-        if (didSuccess) {
-          for (let i = 0; i < 6; i++) {
-            try { currentUser = await fetchUser(); } catch { break; }
-            if (currentUser?.subscription_status === 'active') break;
-            await new Promise(r => setTimeout(r, 1500));
-          }
+        // Coming back from Stripe: verify the session directly (no webhook dependency)
+        if (didSuccess && sessionId) {
+          await fetch('/api/stripe/verify-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+          });
         }
-        if (!currentUser) currentUser = await fetchUser();
+        currentUser = await fetchUser();
       } catch { window.location.href = '/login.html'; return; }
 
       document.getElementById('userGreeting').textContent = `Ciao, ${currentUser.name}`;

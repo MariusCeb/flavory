@@ -201,7 +201,7 @@ app.post('/api/stripe/create-checkout', authenticate, async (req, res) => {
       mode:                 'subscription',
       payment_method_types: ['card'],
       line_items:           [{ price: priceId, quantity: 1 }],
-      success_url:          `${baseUrl()}/app.html?success=1`,
+      success_url:          `${baseUrl()}/app.html?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:           `${baseUrl()}/app.html?cancelled=1`,
       metadata:             { user_id: String(user.id), plan },
       allow_promotion_codes: true
@@ -210,6 +210,32 @@ app.post('/api/stripe/create-checkout', authenticate, async (req, res) => {
   } catch (err) {
     console.error('Stripe checkout error:', err);
     res.status(500).json({ error: 'Errore nella creazione del pagamento' });
+  }
+});
+
+// ─── Stripe: verify checkout session (called on success redirect) ─────────────
+app.post('/api/stripe/verify-session', authenticate, async (req, res) => {
+  const { sessionId } = req.body ?? {};
+  if (!sessionId) return res.status(400).json({ error: 'Session ID mancante' });
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    // Security: ensure this session belongs to the logged-in user
+    if (String(session.metadata?.user_id) !== String(req.user.id))
+      return res.status(403).json({ error: 'Non autorizzato' });
+
+    if (session.payment_status !== 'paid')
+      return res.json({ verified: false });
+
+    // Activate subscription directly (webhook may not have fired yet)
+    db.prepare('UPDATE users SET subscription_status = ?, subscription_id = ?, subscription_plan = ?, free_requests_used = 0 WHERE id = ?')
+      .run('active', session.subscription, session.metadata?.plan || 'monthly', req.user.id);
+
+    res.json({ verified: true });
+  } catch (err) {
+    console.error('Verify session error:', err);
+    res.status(500).json({ error: 'Errore verifica pagamento' });
   }
 });
 
