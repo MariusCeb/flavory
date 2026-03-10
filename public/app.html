@@ -7,6 +7,7 @@
   <link rel="icon" type="image/png" href="/flavory-logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -334,47 +335,99 @@
       box-shadow: 0 0 0 3px rgba(178,34,34,0.12);
     }
 
-    .custom-select { position: relative; user-select: none; }
-    .select-trigger {
-      width: 100%;
+    /* ── Twemoji ─────────────────────────────────────── */
+    img.emoji { height: 1.1em; vertical-align: -0.15em; }
+
+    /* ── Result card h3 ──────────────────────────────── */
+    .result-card h3 {
+      font-size: 0.95em; color: rgba(255,255,255,0.7);
+      margin: 16px 0 6px; font-style: italic;
+    }
+    .result-card h3:first-child { margin-top: 0; }
+
+    /* ── Mode toggle ─────────────────────────────────── */
+    .mode-toggle {
+      display: flex;
       background: rgba(255,255,255,0.04);
-      border: 1.5px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: #fff; font-family: 'Lora', serif; font-size: 0.92em;
-      display: flex; justify-content: space-between; align-items: center;
-      transition: border-color 0.2s; cursor: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 4px;
+      margin-bottom: 28px;
+      gap: 4px;
     }
-    .select-trigger:hover { border-color: rgba(255,255,255,0.22); }
-    .custom-select.open .select-trigger { border-color: #b22222; box-shadow: 0 0 0 3px rgba(178,34,34,0.12); }
-    .select-arrow {
-      width: 16px; height: 16px; flex-shrink: 0;
-      fill: none; stroke: rgba(255,255,255,0.35); stroke-width: 2;
-      transition: transform 0.22s ease;
+    .mode-btn {
+      flex: 1; padding: 9px 12px;
+      border: none; border-radius: 24px;
+      background: transparent;
+      color: rgba(255,255,255,0.45);
+      font-family: 'Lora', serif; font-size: 0.82em;
+      cursor: none; transition: all 0.22s ease;
+      white-space: nowrap;
     }
-    .custom-select.open .select-arrow { transform: rotate(180deg); }
-    .select-options {
-      position: absolute;
-      top: calc(100% + 6px); left: 0; right: 0;
-      background: #1c0606;
-      border: 1px solid rgba(178,34,34,0.22);
-      border-radius: 12px;
-      overflow: hidden;
-      z-index: 50;
-      display: none;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+    .mode-btn.active {
+      background: #b22222; color: #fff;
+      box-shadow: 0 2px 10px rgba(178,34,34,0.35);
     }
-    .custom-select.open .select-options { display: block; }
-    .select-option {
-      padding: 14px 18px;
-      font-family: 'Lora', serif; font-size: 0.9em;
-      color: rgba(255,255,255,0.6);
-      transition: background 0.15s, color 0.15s; cursor: none;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+
+    /* ── Budget slider ───────────────────────────────── */
+    .budget-slider-wrap { }
+    .budget-slider-wrap label {
+      display: block; font-family: 'Lora', serif;
+      font-size: 0.75em; letter-spacing: 2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); margin-bottom: 10px;
     }
-    .select-option:last-child { border-bottom: none; }
-    .select-option:hover { background: rgba(178,34,34,0.1); color: #fff; }
-    .select-option.selected { color: #b22222; background: rgba(178,34,34,0.07); }
+    .budget-slider-wrap label span { color: rgba(255,255,255,0.75); font-size: 1.1em; }
+    .budget-slider-wrap input[type=range] {
+      width: 100%; height: 4px;
+      -webkit-appearance: none; appearance: none;
+      background: rgba(255,255,255,0.12);
+      border-radius: 2px; outline: none; cursor: none;
+    }
+    .budget-slider-wrap input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%; background: #b22222;
+      cursor: none; transition: box-shadow 0.2s;
+    }
+    .budget-slider-wrap input[type=range]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 0 6px rgba(178,34,34,0.2);
+    }
+    .slider-labels {
+      display: flex; justify-content: space-between;
+      font-family: 'Lora', serif; font-size: 0.72em;
+      color: rgba(255,255,255,0.25); margin-top: 6px;
+    }
+
+    /* ── Textarea wrap + camera ──────────────────────── */
+    .textarea-wrap { position: relative; }
+    .camera-btn {
+      position: absolute; bottom: 10px; right: 10px;
+      width: 34px; height: 34px;
+      background: rgba(178,34,34,0.18);
+      border: 1px solid rgba(178,34,34,0.3);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: none; transition: all 0.2s ease; color: rgba(255,255,255,0.55);
+      padding: 0;
+    }
+    .camera-btn:hover { background: rgba(178,34,34,0.35); color: #fff; border-color: #b22222; }
+    .camera-btn svg { width: 16px; height: 16px; }
+
+    .photo-preview {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 8px; padding: 8px 12px;
+      background: rgba(178,34,34,0.08);
+      border: 1px solid rgba(178,34,34,0.2);
+      border-radius: 10px;
+    }
+    .photo-preview img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; }
+    .photo-preview span { font-family: 'Lora', serif; font-size: 0.8em; color: rgba(255,255,255,0.5); flex: 1; }
+    .btn-remove-photo {
+      background: none; border: none; color: rgba(255,255,255,0.35);
+      font-size: 1em; cursor: none; padding: 4px 6px;
+      border-radius: 4px; transition: color 0.15s;
+    }
+    .btn-remove-photo:hover { color: #fff; }
 
     .btn-recommend {
       width: 100%; padding: 16px;
@@ -440,15 +493,24 @@
     /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 900px) {
       #mainApp { flex-direction: column; }
-      .form-panel { width: 100%; border-right: none; border-bottom: 1px solid rgba(178,34,34,0.12); min-width: unset; }
+      .form-panel { width: 100%; border-right: none; border-bottom: 1px solid rgba(178,34,34,0.12); min-width: unset; padding: 32px 24px; }
       .result-panel { padding: 32px 20px; }
       .gate-plans { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
+      .user-greeting { display: none; }
     }
     @media (max-width: 480px) {
-      .form-panel { padding: 28px 18px; }
-      .result-panel { padding: 24px 16px; }
-      .result-card { padding: 24px 20px; }
-      .abbo-manage-card { padding: 40px 24px; }
+      .form-panel { padding: 24px 16px; }
+      .result-panel { padding: 20px 14px; }
+      .result-card { padding: 20px 16px; }
+      .result-card h2 { font-size: 1.05em; }
+      .abbo-manage-card { padding: 36px 20px; }
+      .mode-toggle { gap: 2px; }
+      .mode-btn { font-size: 0.78em; padding: 8px 10px; }
+      .budget-slider-wrap input[type=range] { width: 100%; }
+      .camera-btn { width: 44px; height: 44px; bottom: 8px; right: 8px; }
+      .camera-btn svg { width: 20px; height: 20px; }
+      .form-title { font-size: 1.35em; }
+      .app-nav { padding: 0 14px; }
     }
   </style>
 </head>
@@ -550,29 +612,39 @@
       <h1 class="form-title">Il tuo<br>Sommelier <span style="color:#b22222">AI</span></h1>
       <p class="form-subtitle">Descrivi il pasto e ti consiglio il vino perfetto, con spiegazioni da esperto.</p>
 
-      <div class="field-group">
-        <label>Cosa mangi stasera? *</label>
-        <textarea id="menuInput" placeholder="Es: risotto ai funghi porcini, filetto di manzo al tartufo, tiramisù..."></textarea>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="food-to-wine" onclick="setMode('food-to-wine')">🍽️ Ho il cibo</button>
+        <button class="mode-btn" data-mode="wine-to-food" onclick="setMode('wine-to-food')">🍷 Ho il vino</button>
       </div>
 
       <div class="field-group">
-        <label>La tua città o regione</label>
+        <label id="menuLabel">Cosa mangi stasera? *</label>
+        <div class="textarea-wrap">
+          <textarea id="menuInput" placeholder="Es: risotto ai funghi porcini, filetto di manzo al tartufo, tiramisù..."></textarea>
+          <button type="button" class="camera-btn" id="cameraBtn" title="Fotografa il menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </button>
+        </div>
+        <input type="file" id="menuPhotoInput" accept="image/*" style="display:none">
+        <div id="photoPreview" class="photo-preview" style="display:none">
+          <img id="previewImg" alt="Anteprima menu" />
+          <span id="photoName">Foto caricata</span>
+          <button type="button" class="btn-remove-photo" id="removePhoto" title="Rimuovi foto">✕</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label id="locationLabel">La tua città o regione</label>
         <input type="text" id="locationInput" placeholder="Es: Milano, Toscana, Roma...">
       </div>
 
-      <div class="field-group">
-        <label>Dove compri il vino?</label>
-        <div class="custom-select" id="budgetDropdown">
-          <div class="select-trigger" onclick="toggleSelect()">
-            <span class="select-label">Ovunque (enoteca e supermercato)</span>
-            <svg class="select-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div class="select-options">
-            <div class="select-option selected" data-value="qualsiasi" onclick="selectOption(this)">Ovunque (enoteca e supermercato)</div>
-            <div class="select-option" data-value="supermercato" onclick="selectOption(this)">Solo supermercato (Coop, Conad, Esselunga…)</div>
-            <div class="select-option" data-value="enoteca" onclick="selectOption(this)">Solo enoteca o cantina</div>
-          </div>
-        </div>
+      <div class="field-group budget-slider-wrap">
+        <label>Budget per bottiglia: <span id="budgetVal">€30</span></label>
+        <input type="range" id="budgetSlider" min="5" max="150" step="5" value="30">
+        <div class="slider-labels"><span>€5</span><span>€75</span><span>€150+</span></div>
       </div>
 
       <button class="btn-recommend" id="recommendBtn" onclick="getRecommendation()">
@@ -617,7 +689,6 @@
       });
     }
 
-
     // ── Toast ──────────────────────────────────────────
     function showToast(msg, type = 'success') {
       const t = document.getElementById('toast');
@@ -626,22 +697,59 @@
       setTimeout(() => t.classList.remove('show'), 3500);
     }
 
-    // ── Custom select ──────────────────────────────────
-    let selectedBudget = 'qualsiasi';
+    // ── Mode toggle ────────────────────────────────────
+    let currentMode = 'food-to-wine';
 
-    function toggleSelect() {
-      document.getElementById('budgetDropdown').classList.toggle('open');
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      if (mode === 'wine-to-food') {
+        document.getElementById('menuLabel').textContent = 'Descrivi il vino che hai *';
+        document.getElementById('menuInput').placeholder = 'Es: Barolo Marchesi di Barolo 2019, Chianti Classico Riserva...';
+        document.getElementById('locationLabel').textContent = 'Occasione o tipo di pasto (opzionale)';
+        document.getElementById('locationInput').placeholder = 'Es: cena romantica, pranzo domenicale, aperitivo...';
+        document.getElementById('recommendBtn').textContent = 'Suggerisci abbinamenti';
+      } else {
+        document.getElementById('menuLabel').textContent = 'Cosa mangi stasera? *';
+        document.getElementById('menuInput').placeholder = 'Es: risotto ai funghi porcini, filetto di manzo al tartufo, tiramisù...';
+        document.getElementById('locationLabel').textContent = 'La tua città o regione';
+        document.getElementById('locationInput').placeholder = 'Es: Milano, Toscana, Roma...';
+        document.getElementById('recommendBtn').textContent = 'Consigliami un vino';
+      }
     }
-    function selectOption(el) {
-      selectedBudget = el.dataset.value;
-      document.querySelector('.select-label').textContent = el.textContent;
-      document.querySelectorAll('.select-option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      document.getElementById('budgetDropdown').classList.remove('open');
-    }
-    document.addEventListener('click', e => {
-      const dd = document.getElementById('budgetDropdown');
-      if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+
+    // ── Budget slider ──────────────────────────────────
+    const budgetSlider = document.getElementById('budgetSlider');
+    const budgetVal    = document.getElementById('budgetVal');
+    budgetSlider.addEventListener('input', () => {
+      budgetVal.textContent = `€${budgetSlider.value}`;
+    });
+
+    // ── Camera / photo upload ──────────────────────────
+    let uploadedPhoto = null;
+
+    document.getElementById('cameraBtn').addEventListener('click', () => {
+      document.getElementById('menuPhotoInput').click();
+    });
+
+    document.getElementById('menuPhotoInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        uploadedPhoto = ev.target.result;
+        document.getElementById('previewImg').src = uploadedPhoto;
+        document.getElementById('photoName').textContent = file.name;
+        document.getElementById('photoPreview').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('removePhoto').addEventListener('click', () => {
+      uploadedPhoto = null;
+      document.getElementById('menuPhotoInput').value = '';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('previewImg').src = '';
     });
 
     // ── Free trial UI ──────────────────────────────────
@@ -749,7 +857,7 @@
       const location = document.getElementById('locationInput').value.trim();
 
       if (!menu) {
-        showToast('Descrivi prima cosa mangi!', 'error');
+        showToast(currentMode === 'wine-to-food' ? 'Descrivi prima il vino!' : 'Descrivi prima cosa mangi!', 'error');
         document.getElementById('menuInput').focus();
         return;
       }
@@ -762,10 +870,13 @@
       btn.textContent = 'Analisi in corso…';
 
       try {
+        const body = { menu, location, budget: parseInt(budgetSlider.value), mode: currentMode };
+        if (uploadedPhoto) body.menuPhoto = uploadedPhoto;
+
         const res  = await fetch('/api/recommend', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ menu, location, budget: selectedBudget })
+          body: JSON.stringify(body)
         });
         const data = await res.json();
 
@@ -782,6 +893,9 @@
         const html = marked.parse(data.recommendation || '');
         const card = document.getElementById('recommendationCard');
         card.innerHTML = html;
+        if (typeof twemoji !== 'undefined') {
+          twemoji.parse(card, { folder: 'svg', ext: '.svg' });
+        }
 
         document.getElementById('resultLoading').classList.add('hidden');
         document.getElementById('resultContent').classList.remove('hidden');
@@ -796,7 +910,7 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Consigliami un vino';
+        btn.textContent = currentMode === 'wine-to-food' ? 'Suggerisci abbinamenti' : 'Consigliami un vino';
       }
     }
 
@@ -806,9 +920,12 @@
       document.getElementById('resultEmpty').style.display = 'block';
       document.getElementById('menuInput').value = '';
       document.getElementById('locationInput').value = '';
-      selectedBudget = 'qualsiasi';
-      document.querySelector('.select-label').textContent = 'Ovunque (enoteca e supermercato)';
-      document.querySelectorAll('.select-option').forEach((o, i) => o.classList.toggle('selected', i === 0));
+      budgetSlider.value = 30;
+      budgetVal.textContent = '€30';
+      uploadedPhoto = null;
+      document.getElementById('menuPhotoInput').value = '';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('previewImg').src = '';
       document.getElementById('menuInput').focus();
     }
 

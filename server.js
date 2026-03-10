@@ -322,25 +322,44 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // ─── Wine recommendation ──────────────────────────────────────────────────────
 app.post('/api/recommend', authenticate, checkAccess, async (req, res) => {
-  const { menu, location, budget } = req.body ?? {};
+  const { menu, location, budget, menuPhoto, mode } = req.body ?? {};
 
   if (!menu || menu.trim().length < 5)
-    return res.status(400).json({ error: 'Descrivi il tuo pasto (almeno 5 caratteri)' });
+    return res.status(400).json({ error: 'Descrivi il tuo pasto o vino (almeno 5 caratteri)' });
+
+  if (menuPhoto && menuPhoto.length > 5_000_000)
+    return res.status(400).json({ error: 'Immagine troppo grande. Usa una foto più piccola.' });
 
   const locationNote = location?.trim()
-    ? `Zona del cliente: ${location.trim()}`
-    : 'Zona non specificata — consiglia vini reperibili a livello nazionale italiano';
+    ? (mode === 'wine-to-food'
+        ? `Occasione o tipo di pasto: ${location.trim()}`
+        : `Zona del cliente: ${location.trim()}`)
+    : (mode === 'wine-to-food'
+        ? 'Occasione non specificata'
+        : 'Zona non specificata — consiglia vini reperibili a livello nazionale italiano');
 
-  const budgetLabels = {
-    supermercato: 'Solo supermercato (Coop, Conad, Esselunga, Lidl, Pam, ecc.)',
-    enoteca:      'Enoteca o cantina specializzata',
-    qualsiasi:    'Qualsiasi punto vendita: sia supermercato che enoteca'
-  };
-  const budgetNote = budgetLabels[budget] ?? budgetLabels.qualsiasi;
+  const budgetNote = `Budget massimo per bottiglia: €${budget ?? 30}. Scegli vini in questa fascia di prezzo, che siano reperibili sia in supermercato che in enoteca.`;
 
-  const systemPrompt = `Sei un sommelier professionista con specializzazione in vini italiani e internazionali. Hai una conoscenza enciclopedica delle DOC, DOCG, IGT italiane e dei vini disponibili nei supermercati della grande distribuzione italiana. Rispondi sempre in italiano con tono autorevole ma accessibile, come un amico esperto. Non usare emoji — usa solo testo, markdown e punteggiatura elegante.`;
+  const photoInstruction = menuPhoto
+    ? "\n\nL'utente ha fornito una foto della carta dei vini del ristorante. Consiglia SOLO vini visibili nella foto."
+    : '';
 
-  const userPrompt = `Il cliente ha il seguente menu/pasto:\n${menu.trim()}\n\n${locationNote}\nPreferenza d'acquisto: ${budgetNote}\n\nFornisci il consiglio da sommelier con questa struttura:\n\n## Vino consigliato\nNome specifico, denominazione (DOC/DOCG/IGT), produttore se possibile, annata indicativa.\n\n## Perché questo abbinamento\nSpiega in 2-3 frasi il perché del connubio gusto-vino.\n\n## Caratteristiche del vino\nGusto, aroma, corpo, temperatura di servizio consigliata.\n\n## Dove trovarlo\nPunti vendita specifici in base alla zona e preferenza indicata (nomi di catene, cantine note).\n\n## Fascia di prezzo\nPrezzo indicativo a bottiglia.\n\n## Alternativa\nSe il vino principale è difficile da reperire, suggerisci una valida alternativa.`;
+  const systemPrompt = `Sei un sommelier professionista con specializzazione in vini italiani e internazionali. Hai una conoscenza enciclopedica delle DOC, DOCG, IGT italiane e dei vini disponibili nei supermercati della grande distribuzione italiana. Rispondi sempre in italiano con tono autorevole ma accessibile, come un amico esperto. Usa queste emoji specifiche nei titoli delle sezioni: 🍷 per il nome vino, 🤝 per il perché dell'abbinamento, 📝 per le caratteristiche, 📍 per dove trovarlo, 💰 per il prezzo.${photoInstruction}
+
+REGOLE FONDAMENTALI PER L'ACCURATEZZA:
+- Cita solo vini e produttori che esistono realmente e di cui sei certo. Non inventare mai nomi di etichette, cantine o produttori.
+- Se non sei sicuro dell'esistenza di un produttore specifico, descrivi il vino in termini generici (es. "un Barolo DOCG di un produttore delle Langhe") senza inventare nomi propri.
+- Le denominazioni (DOC, DOCG, IGT) devono essere reali e corrette.
+- Le annate consigliate devono essere plausibili per il vino citato; se non sei certo, indica solo il range (es. "annata recente, 2019-2022").
+- I prezzi devono essere orientativi e realistici per il mercato italiano attuale.
+- Per "Dove trovarlo" cita solo catene della GDO o enoteche effettivamente presenti in Italia; non inventare punti vendita.`;
+
+  let userPrompt;
+  if (mode === 'wine-to-food') {
+    userPrompt = `Il cliente ha questo vino: ${menu.trim()}\n${locationNote}\n\nSuggerisci 3 abbinamenti gastronomici ideali con questa struttura:\n\n## 🍽️ Abbinamento 1 — [Nome piatto o tipo di cucina]\n\n### 🤝 Perché funziona\nSpiega in 2 frasi il perché del connubio.\n\n### 📝 Come servirlo\nTemperatura del vino, presentazione, consigli pratici.\n\n### 💡 Suggerimento\nUn consiglio in più per valorizzare l'abbinamento.\n\n## 🍽️ Abbinamento 2 — [Nome piatto o tipo di cucina]\n\n### 🤝 Perché funziona\n\n### 📝 Come servirlo\n\n### 💡 Suggerimento\n\n## 🍽️ Abbinamento 3 — [Nome piatto o tipo di cucina]\n\n### 🤝 Perché funziona\n\n### 📝 Come servirlo\n\n### 💡 Suggerimento`;
+  } else {
+    userPrompt = `Il cliente ha il seguente menu/pasto:\n${menu.trim()}\n\n${locationNote}\n${budgetNote}\n\nFornisci 3 consigli da sommelier con questa struttura per ciascuno:\n\n## 🍷 Vino 1 — [Nome Vino]\nNome specifico, denominazione (DOC/DOCG/IGT), produttore se possibile, annata indicativa.\n\n### 🤝 Perché questo abbinamento\nSpiega in 2 frasi il perché del connubio gusto-vino.\n\n### 📝 Caratteristiche\nGusto, aroma, corpo, temperatura di servizio consigliata.\n\n### 📍 Dove trovarlo\nPunti vendita specifici in base alla zona (nomi di catene GDO, enoteche note).\n\n### 💰 Prezzo\nPrezzo indicativo a bottiglia in base al budget indicato.\n\n## 🍷 Vino 2 — [Nome Vino]\n[stessa struttura]\n\n## 🍷 Vino 3 — [Nome Vino]\n[stessa struttura]`;
+  }
 
   // Check if this is a free-tier request (before OpenAI call)
   const userRow = db
@@ -349,13 +368,20 @@ app.post('/api/recommend', authenticate, checkAccess, async (req, res) => {
   const isFreeRequest = userRow.subscription_status !== 'active';
 
   try {
+    const userMessage = menuPhoto
+      ? { role: 'user', content: [
+          { type: 'text', text: userPrompt },
+          { type: 'image_url', image_url: { url: menuPhoto, detail: 'high' } }
+        ]}
+      : { role: 'user', content: userPrompt };
+
     const completion = await openai.chat.completions.create({
       model:      'gpt-4o',
       messages:   [
         { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt   }
+        userMessage
       ],
-      max_tokens:  1000,
+      max_tokens:  menuPhoto ? 1500 : 1200,
       temperature: 0.7
     });
 
