@@ -4,8 +4,8 @@
   "description": "AI Wine Sommelier — trova il vino perfetto per ogni pasto",
   "main": "server.js",
   "scripts": {
-    "start": "node --no-warnings server.js",
-    "dev": "nodemon --no-warnings server.js"
+    "start": "node --no-warnings --experimental-sqlite server.js",
+    "dev": "nodemon --no-warnings --experimental-sqlite server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
