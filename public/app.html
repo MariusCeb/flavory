@@ -594,6 +594,48 @@
     .btn-cookie.primary:hover { background: #d62828; }
     .cookie-banner.hidden { display: none; }
 
+    /* ── Upgrade confirmation modal ──────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.72);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: #1a0505;
+      border: 1px solid rgba(178,34,34,0.4);
+      border-radius: 20px;
+      padding: 40px 36px;
+      max-width: 440px; width: 100%;
+      text-align: center;
+      animation: fadeIn 0.25s ease;
+    }
+    .modal-title { font-size: 1.3em; color: #fff; margin-bottom: 18px; }
+    .modal-body {
+      font-family: 'Lora', serif; font-size: 0.92em;
+      color: rgba(255,255,255,0.65); line-height: 1.75; margin-bottom: 28px;
+    }
+    .modal-actions { display: flex; gap: 12px; }
+    .btn-modal-cancel {
+      flex: 1; padding: 13px;
+      background: transparent; border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 10px; color: rgba(255,255,255,0.55);
+      font-family: 'Playfair Display', serif; font-size: 0.95em;
+      cursor: none; transition: all 0.2s ease;
+    }
+    .btn-modal-cancel:hover { border-color: rgba(255,255,255,0.35); color: #fff; }
+    .btn-modal-confirm {
+      flex: 1; padding: 13px;
+      background: #b22222; border: none; border-radius: 10px;
+      color: #fff; font-family: 'Playfair Display', serif;
+      font-size: 0.95em; font-weight: bold;
+      cursor: none; transition: all 0.25s ease;
+    }
+    .btn-modal-confirm:hover:not(:disabled) { background: #d62828; }
+    .btn-modal-confirm:disabled { opacity: 0.55; }
+
     /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 900px) {
       #mainApp { flex-direction: column; }
@@ -705,7 +747,7 @@
           <span class="upgrade-label">Risparmia di più</span>
           <h4>Passa al Piano Annuale</h4>
           <p class="upgrade-saving">€79/anno — risparmi €40,88 (2 mesi gratis)</p>
-          <p class="upgrade-desc">Il tuo abbonamento mensile verrà convertito subito. Paghi solo la differenza proporzionale.</p>
+          <p class="upgrade-desc">Il cambio sarà attivo dal prossimo ciclo di fatturazione. Nessun addebito immediato.</p>
           <button class="btn-upgrade-plan" id="upgradeBtn" onclick="upgradeToYearly()">Aggiorna a Piano Annuale →</button>
         </div>
 
@@ -736,6 +778,22 @@
     <div class="cookie-actions">
       <button class="btn-cookie" onclick="setCookieConsent('minimal')">Solo necessari</button>
       <button class="btn-cookie primary" onclick="setCookieConsent('all')">Accetta tutti</button>
+    </div>
+  </div>
+
+  <!-- ── UPGRADE MODAL ─────────────────────────────── -->
+  <div id="upgradeModal" class="modal-overlay hidden" onclick="if(event.target===this)closeUpgradeModal()">
+    <div class="modal-box">
+      <h3 class="modal-title">Aggiorna al Piano Annuale</h3>
+      <p class="modal-body">
+        Il tuo abbonamento mensile <strong>€9,99/mese</strong> sarà aggiornato al piano annuale <strong>€79/anno</strong>.<br><br>
+        Il cambio sarà attivo dal tuo prossimo rinnovo — nessun addebito immediato.<br>
+        <span style="color:rgba(111,207,151,0.8);font-size:0.9em">Risparmio: €40,88/anno · 2 mesi gratis</span>
+      </p>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeUpgradeModal()">Annulla</button>
+        <button class="btn-modal-confirm" id="confirmUpgradeBtn" onclick="confirmUpgrade()">Conferma aggiornamento</button>
+      </div>
     </div>
   </div>
 
@@ -954,6 +1012,7 @@
           </div>
         </div>`;
       }).join('');
+      if (typeof twemoji !== 'undefined') twemoji.parse(list, { folder: 'svg', ext: '.svg' });
     }
 
     function openHistoryItem(id) {
@@ -1077,6 +1136,11 @@
         showTab('abbonamento');
         if (didCancel) showToast('Pagamento annullato — riprova quando vuoi.', 'error');
       }
+
+      // Apply Twemoji to all static page emojis (mode toggle, tabs, etc.)
+      if (typeof twemoji !== 'undefined') {
+        twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+      }
     }
 
     init();
@@ -1106,23 +1170,34 @@
     }
 
     // ── Upgrade to yearly ──────────────────────────────
-    async function upgradeToYearly() {
-      const btn = document.getElementById('upgradeBtn');
-      btn.disabled = true;
-      btn.textContent = 'Aggiornamento in corso…';
+    function upgradeToYearly() {
+      document.getElementById('upgradeModal').classList.remove('hidden');
+    }
+
+    function closeUpgradeModal() {
+      document.getElementById('upgradeModal').classList.add('hidden');
+    }
+
+    async function confirmUpgrade() {
+      const confirmBtn = document.getElementById('confirmUpgradeBtn');
+      const upgradeBtn = document.getElementById('upgradeBtn');
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Aggiornamento in corso…';
       try {
         const res  = await fetch('/api/stripe/upgrade-to-yearly', { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Errore sconosciuto');
 
-        showToast('Piano aggiornato ad Annuale!', 'success');
+        closeUpgradeModal();
+        showToast('Piano aggiornato! Il cambio sarà attivo al prossimo rinnovo.', 'success');
         currentUser = await fetchUser();
         document.getElementById('abboManagePlanBadge').textContent = 'Piano Annuale';
         document.getElementById('upgradeCard').classList.add('hidden');
       } catch (err) {
+        closeUpgradeModal();
         showToast(err.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Aggiorna a Piano Annuale →';
+        upgradeBtn.disabled = false;
+        upgradeBtn.textContent = 'Aggiorna a Piano Annuale →';
       }
     }
 

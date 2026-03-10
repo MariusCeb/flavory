@@ -276,7 +276,7 @@ app.post('/api/stripe/upgrade-to-yearly', authenticate, async (req, res) => {
 
     await stripe.subscriptions.update(user.subscription_id, {
       items: [{ id: itemId, price: yearlyPriceId }],
-      proration_behavior: 'create_prorations',
+      proration_behavior: 'none',
     });
 
     db.prepare('UPDATE users SET subscription_plan = ? WHERE id = ?')
