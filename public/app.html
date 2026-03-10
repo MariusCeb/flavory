@@ -450,21 +450,34 @@
     .camera-btn:hover { background: rgba(178,34,34,0.35); color: #fff; border-color: #b22222; }
     .camera-btn svg { width: 16px; height: 16px; }
 
-    .photo-preview {
+    .photo-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .photo-item {
       display: flex; align-items: center; gap: 10px;
-      margin-top: 8px; padding: 8px 12px;
+      padding: 8px 12px;
       background: rgba(178,34,34,0.08);
       border: 1px solid rgba(178,34,34,0.2);
       border-radius: 10px;
     }
-    .photo-preview img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; }
-    .photo-preview span { font-family: 'Lora', serif; font-size: 0.8em; color: rgba(255,255,255,0.5); flex: 1; }
+    .photo-item img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .photo-item-name {
+      font-family: 'Lora', serif; font-size: 0.8em; color: rgba(255,255,255,0.5);
+      flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     .btn-remove-photo {
       background: none; border: none; color: rgba(255,255,255,0.35);
       font-size: 1em; cursor: none; padding: 4px 6px;
-      border-radius: 4px; transition: color 0.15s;
+      border-radius: 4px; transition: color 0.15s; flex-shrink: 0;
     }
     .btn-remove-photo:hover { color: #fff; }
+    .btn-add-photo {
+      width: 100%; margin-top: 6px; padding: 9px;
+      background: transparent; border: 1px dashed rgba(178,34,34,0.3);
+      border-radius: 10px; color: rgba(255,255,255,0.3);
+      font-family: 'Lora', serif; font-size: 0.82em;
+      cursor: none; transition: all 0.2s ease;
+    }
+    .btn-add-photo:hover { border-color: rgba(178,34,34,0.55); color: rgba(255,255,255,0.6); }
+    .btn-add-photo.hidden { display: none; }
 
     .btn-recommend {
       width: 100%; padding: 16px;
@@ -821,11 +834,8 @@
           </button>
         </div>
         <input type="file" id="menuPhotoInput" accept="image/*" style="display:none">
-        <div id="photoPreview" class="photo-preview" style="display:none">
-          <img id="previewImg" alt="Anteprima menu" />
-          <span id="photoName">Foto caricata</span>
-          <button type="button" class="btn-remove-photo" id="removePhoto" title="Rimuovi foto">✕</button>
-        </div>
+        <div id="photoList" class="photo-list"></div>
+        <button type="button" class="btn-add-photo hidden" id="addMorePhoto">+ Aggiungi un'altra pagina</button>
       </div>
 
       <div class="field-group">
@@ -924,30 +934,85 @@
     });
 
     // ── Camera / photo upload ──────────────────────────
-    let uploadedPhoto = null;
+    const MAX_PHOTOS = 3;
+    let uploadedPhotos = []; // [{name, data}]
 
-    document.getElementById('cameraBtn').addEventListener('click', () => {
+    // Converts any image (incl. HEIC from iOS) to JPEG base64 via canvas, max 1600px
+    async function imageToJpegBase64(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const MAX = 1600;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Impossibile leggere la foto')); };
+        img.src = url;
+      });
+    }
+
+    function renderPhotoPreview() {
+      const list   = document.getElementById('photoList');
+      const addBtn = document.getElementById('addMorePhoto');
+      if (!uploadedPhotos.length) {
+        list.innerHTML = '';
+        addBtn.classList.add('hidden');
+        return;
+      }
+      list.innerHTML = uploadedPhotos.map((p, i) => `
+        <div class="photo-item">
+          <img src="${p.data}" alt="Pagina ${i + 1}">
+          <span class="photo-item-name">Pagina ${i + 1} — ${p.name}</span>
+          <button type="button" class="btn-remove-photo" onclick="removePhoto(${i})" title="Rimuovi">✕</button>
+        </div>`).join('');
+      addBtn.textContent = `+ Aggiungi un'altra pagina (${uploadedPhotos.length}/${MAX_PHOTOS})`;
+      addBtn.classList.toggle('hidden', uploadedPhotos.length >= MAX_PHOTOS);
+      if (!isTouch) {
+        list.querySelectorAll('button').forEach(el => {
+          el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+          el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+      }
+    }
+
+    function removePhoto(index) {
+      uploadedPhotos.splice(index, 1);
+      document.getElementById('menuPhotoInput').value = '';
+      renderPhotoPreview();
+    }
+
+    async function addPhoto() {
+      if (uploadedPhotos.length >= MAX_PHOTOS) {
+        showToast(`Puoi caricare al massimo ${MAX_PHOTOS} foto.`, 'error');
+        return;
+      }
       document.getElementById('menuPhotoInput').click();
-    });
+    }
 
-    document.getElementById('menuPhotoInput').addEventListener('change', e => {
+    document.getElementById('cameraBtn').addEventListener('click', addPhoto);
+    document.getElementById('addMorePhoto').addEventListener('click', addPhoto);
+
+    document.getElementById('menuPhotoInput').addEventListener('change', async e => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        uploadedPhoto = ev.target.result;
-        document.getElementById('previewImg').src = uploadedPhoto;
-        document.getElementById('photoName').textContent = file.name;
-        document.getElementById('photoPreview').style.display = 'flex';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById('removePhoto').addEventListener('click', () => {
-      uploadedPhoto = null;
-      document.getElementById('menuPhotoInput').value = '';
-      document.getElementById('photoPreview').style.display = 'none';
-      document.getElementById('previewImg').src = '';
+      if (uploadedPhotos.length >= MAX_PHOTOS) { showToast(`Massimo ${MAX_PHOTOS} foto.`, 'error'); return; }
+      try {
+        const data = await imageToJpegBase64(file);
+        uploadedPhotos.push({ name: file.name, data });
+        renderPhotoPreview();
+      } catch {
+        showToast('Impossibile leggere la foto — riprova.', 'error');
+      }
+      e.target.value = ''; // reset so same file can be re-selected
     });
 
     // ── Free trial UI ──────────────────────────────────
@@ -1227,7 +1292,7 @@
 
       try {
         const body = { menu, location, budget: parseInt(budgetSlider.value), mode: currentMode };
-        if (uploadedPhoto) body.menuPhoto = uploadedPhoto;
+        if (uploadedPhotos.length) body.menuPhotos = uploadedPhotos.map(p => p.data);
 
         const res  = await fetch('/api/recommend', {
           method: 'POST',
@@ -1280,10 +1345,9 @@
       document.getElementById('locationInput').value = '';
       budgetSlider.value = 30;
       budgetVal.textContent = '€30';
-      uploadedPhoto = null;
+      uploadedPhotos = [];
       document.getElementById('menuPhotoInput').value = '';
-      document.getElementById('photoPreview').style.display = 'none';
-      document.getElementById('previewImg').src = '';
+      renderPhotoPreview();
       document.getElementById('menuInput').focus();
     }
 

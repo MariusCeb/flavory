@@ -382,13 +382,15 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // ─── Wine recommendation ──────────────────────────────────────────────────────
 app.post('/api/recommend', authenticate, checkAccess, async (req, res) => {
-  const { menu, location, budget, menuPhoto, mode } = req.body ?? {};
+  const { menu, location, budget, menuPhotos, mode } = req.body ?? {};
+  // Support both array and legacy single-photo
+  const photos = Array.isArray(menuPhotos) ? menuPhotos : (menuPhotos ? [menuPhotos] : []);
 
   if (!menu || menu.trim().length < 5)
     return res.status(400).json({ error: 'Descrivi il tuo pasto o vino (almeno 5 caratteri)' });
 
-  if (menuPhoto && menuPhoto.length > 5_000_000)
-    return res.status(400).json({ error: 'Immagine troppo grande. Usa una foto più piccola.' });
+  if (photos.some(p => p.length > 5_000_000))
+    return res.status(400).json({ error: 'Una delle immagini è troppo grande. Usa foto più piccole.' });
 
   const locationNote = location?.trim()
     ? (mode === 'wine-to-food'
@@ -400,8 +402,8 @@ app.post('/api/recommend', authenticate, checkAccess, async (req, res) => {
 
   const budgetNote = `Budget massimo per bottiglia: €${budget ?? 30}. Scegli vini in questa fascia di prezzo, che siano reperibili sia in supermercato che in enoteca.`;
 
-  const photoInstruction = menuPhoto
-    ? "\n\nL'utente ha fornito una foto della carta dei vini del ristorante. Consiglia SOLO vini visibili nella foto."
+  const photoInstruction = photos.length > 0
+    ? `\n\nL'utente ha fornito ${photos.length === 1 ? 'una foto' : `${photos.length} foto`} della carta dei vini del ristorante. Consiglia SOLO vini visibili nelle foto.`
     : '';
 
   const systemPrompt = `Sei un sommelier professionista con specializzazione in vini italiani e internazionali. Hai una conoscenza enciclopedica delle DOC, DOCG, IGT italiane e dei vini disponibili nei supermercati della grande distribuzione italiana. Rispondi sempre in italiano con tono autorevole ma accessibile, come un amico esperto. Usa queste emoji specifiche nei titoli delle sezioni: 🍷 per il nome vino, 🤝 per il perché dell'abbinamento, 📝 per le caratteristiche, 📍 per dove trovarlo, 💰 per il prezzo.${photoInstruction}
@@ -428,10 +430,10 @@ REGOLE FONDAMENTALI PER L'ACCURATEZZA:
   const isFreeRequest = userRow.subscription_status !== 'active';
 
   try {
-    const userMessage = menuPhoto
+    const userMessage = photos.length > 0
       ? { role: 'user', content: [
           { type: 'text', text: userPrompt },
-          { type: 'image_url', image_url: { url: menuPhoto, detail: 'high' } }
+          ...photos.map(p => ({ type: 'image_url', image_url: { url: p, detail: 'high' } }))
         ]}
       : { role: 'user', content: userPrompt };
 
@@ -441,7 +443,7 @@ REGOLE FONDAMENTALI PER L'ACCURATEZZA:
         { role: 'system', content: systemPrompt },
         userMessage
       ],
-      max_tokens:  menuPhoto ? 1500 : 1200,
+      max_tokens:  photos.length > 0 ? 1500 : 1200,
       temperature: 0.7
     });
 
