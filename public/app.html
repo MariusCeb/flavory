@@ -286,6 +286,42 @@
     }
     .btn-portal:hover { border-color: #b22222; color: #fff; background: rgba(178,34,34,0.08); }
 
+    /* ── Upgrade card ────────────────────────────────── */
+    .upgrade-card {
+      background: rgba(178,34,34,0.07);
+      border: 1px solid rgba(178,34,34,0.28);
+      border-radius: 16px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .upgrade-card.hidden { display: none; }
+    .upgrade-label {
+      font-family: 'Lora', serif; font-size: 0.7em;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: #b22222; display: block; margin-bottom: 10px;
+    }
+    .upgrade-card h4 { font-size: 1.05em; color: #fff; margin-bottom: 4px; }
+    .upgrade-saving {
+      font-family: 'Lora', serif; font-size: 0.85em;
+      color: #6fcf97; margin-bottom: 6px;
+    }
+    .upgrade-desc {
+      font-family: 'Lora', serif; font-size: 0.82em;
+      color: rgba(255,255,255,0.45); line-height: 1.55; margin-bottom: 16px;
+    }
+    .btn-upgrade-plan {
+      width: 100%; padding: 13px;
+      background: #b22222; color: #fff; border: none; border-radius: 10px;
+      font-family: 'Playfair Display', serif; font-size: 0.95em; font-weight: bold;
+      cursor: none; transition: all 0.25s ease;
+    }
+    .btn-upgrade-plan:hover:not(:disabled) {
+      background: #d62828;
+      box-shadow: 0 6px 20px rgba(178,34,34,0.35);
+    }
+    .btn-upgrade-plan:disabled { opacity: 0.55; }
+
     /* ── Main App ────────────────────────────────────── */
     #mainApp {
       min-height: calc(100vh - 128px);
@@ -589,17 +625,21 @@
         <h2>Abbonamento attivo</h2>
         <p>Hai accesso illimitato al tuo Sommelier AI personale.</p>
         <div class="abbo-features">
-          <div class="abbo-feature">
-            <span class="abbo-feature-check">✓</span> Consigli illimitati
-          </div>
-          <div class="abbo-feature">
-            <span class="abbo-feature-check">✓</span> Sommelier GPT-4o
-          </div>
-          <div class="abbo-feature">
-            <span class="abbo-feature-check">✓</span> Abbinamenti personalizzati per zona
-          </div>
+          <div class="abbo-feature"><span class="abbo-feature-check">✓</span> Consigli illimitati</div>
+          <div class="abbo-feature"><span class="abbo-feature-check">✓</span> Sommelier GPT-4o</div>
+          <div class="abbo-feature"><span class="abbo-feature-check">✓</span> Abbinamenti personalizzati per zona</div>
         </div>
-        <button class="btn-portal" onclick="openPortal()">Gestisci abbonamento →</button>
+
+        <!-- Upgrade banner (visible only on monthly plan) -->
+        <div class="upgrade-card hidden" id="upgradeCard">
+          <span class="upgrade-label">Risparmia di più</span>
+          <h4>Passa al Piano Annuale</h4>
+          <p class="upgrade-saving">€79/anno — risparmi €40,88 (2 mesi gratis)</p>
+          <p class="upgrade-desc">Il tuo abbonamento mensile verrà convertito subito. Paghi solo la differenza proporzionale.</p>
+          <button class="btn-upgrade-plan" id="upgradeBtn" onclick="upgradeToYearly()">Aggiorna a Piano Annuale →</button>
+        </div>
+
+        <button class="btn-portal" onclick="openPortal()">Gestisci o cancella abbonamento →</button>
       </div>
     </div>
 
@@ -808,10 +848,11 @@
       const used         = currentUser.free_requests_used || 0;
       const isSubscribed = currentUser.subscription_status === 'active';
 
-      // Show plan label in abbonamento manage card
+      // Show plan label and upgrade card
       if (isSubscribed) {
-        const planLabel = currentUser.subscription_plan === 'yearly' ? 'Piano Annuale' : 'Piano Mensile';
-        document.getElementById('abboManagePlanBadge').textContent = planLabel;
+        const isYearly = currentUser.subscription_plan === 'yearly';
+        document.getElementById('abboManagePlanBadge').textContent = isYearly ? 'Piano Annuale' : 'Piano Mensile';
+        document.getElementById('upgradeCard').classList.toggle('hidden', isYearly);
       }
 
       // Setup abbonamento view
@@ -862,6 +903,27 @@
         if (data.url) window.location.href = data.url;
         else showToast(data.error || 'Errore nel portale', 'error');
       } catch { showToast('Errore di connessione — riprova.', 'error'); }
+    }
+
+    // ── Upgrade to yearly ──────────────────────────────
+    async function upgradeToYearly() {
+      const btn = document.getElementById('upgradeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Aggiornamento in corso…';
+      try {
+        const res  = await fetch('/api/stripe/upgrade-to-yearly', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Errore sconosciuto');
+
+        showToast('Piano aggiornato ad Annuale!', 'success');
+        currentUser = await fetchUser();
+        document.getElementById('abboManagePlanBadge').textContent = 'Piano Annuale';
+        document.getElementById('upgradeCard').classList.add('hidden');
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Aggiorna a Piano Annuale →';
+      }
     }
 
     // ── Logout ─────────────────────────────────────────

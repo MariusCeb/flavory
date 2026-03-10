@@ -256,6 +256,39 @@ app.get('/api/stripe/portal', authenticate, async (req, res) => {
   }
 });
 
+// ─── Stripe: upgrade to yearly ────────────────────────────────────────────────
+app.post('/api/stripe/upgrade-to-yearly', authenticate, async (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+
+  if (user.subscription_status !== 'active')
+    return res.status(400).json({ error: 'Nessun abbonamento attivo' });
+
+  if (user.subscription_plan === 'yearly')
+    return res.status(400).json({ error: 'Sei già sul piano annuale' });
+
+  const yearlyPriceId = process.env.STRIPE_PRICE_ID_YEARLY;
+  if (!yearlyPriceId)
+    return res.status(500).json({ error: 'Prezzo annuale non configurato nel .env' });
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(user.subscription_id);
+    const itemId = subscription.items.data[0].id;
+
+    await stripe.subscriptions.update(user.subscription_id, {
+      items: [{ id: itemId, price: yearlyPriceId }],
+      proration_behavior: 'create_prorations',
+    });
+
+    db.prepare('UPDATE users SET subscription_plan = ? WHERE id = ?')
+      .run('yearly', req.user.id);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Upgrade error:', err);
+    res.status(500).json({ error: "Errore durante l'aggiornamento del piano" });
+  }
+});
+
 // ─── Stripe: webhook ──────────────────────────────────────────────────────────
 async function handleWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
