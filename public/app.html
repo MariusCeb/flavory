@@ -52,7 +52,7 @@
       border-bottom: 1px solid rgba(178,34,34,0.15);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .app-nav-logo {
@@ -103,7 +103,7 @@
       padding: 0 5%;
       position: sticky;
       top: 64px;
-      z-index: 99;
+      z-index: 999;
     }
 
     .app-tab {
@@ -524,8 +524,19 @@
       animation: fadeIn 0.5s ease;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .result-card h2 { font-size: 1.2em; color: #fff; margin: 28px 0 10px; border-bottom: 1px solid rgba(178,34,34,0.2); padding-bottom: 8px; }
-    .result-card h2:first-child { margin-top: 0; }
+    .result-card h2 {
+      font-size: 1.35em; color: #fff;
+      margin: 14px -40px 16px;
+      padding: 18px 40px;
+      background: rgba(178,34,34,0.07);
+      border-top: 1px solid rgba(178,34,34,0.2);
+      border-bottom: 1px solid rgba(178,34,34,0.12);
+    }
+    .result-card h2:first-child { margin-top: -40px; border-top: none; border-radius: 18px 18px 0 0; }
+
+    /* ── Wine section divider (wavy SVG) ─────────────── */
+    .wine-divider { margin: 28px -40px -14px; height: 28px; overflow: hidden; }
+    .wine-divider svg { width: 100%; height: 28px; display: block; }
     .result-card p { font-family: 'Lora', serif; font-size: 0.95em; color: rgba(255,255,255,0.8); line-height: 1.75; margin-bottom: 8px; }
     .result-card strong { color: #fff; }
     .result-card ul, .result-card ol { font-family: 'Lora', serif; font-size: 0.93em; color: rgba(255,255,255,0.75); line-height: 1.7; padding-left: 20px; }
@@ -661,7 +672,9 @@
       .form-panel { padding: 24px 16px; }
       .result-panel { padding: 20px 14px; }
       .result-card { padding: 20px 16px; }
-      .result-card h2 { font-size: 1.05em; }
+      .result-card h2 { font-size: 1.1em; margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
+      .result-card h2:first-child { margin-top: -20px; }
+      .wine-divider { margin-left: -16px; margin-right: -16px; }
       .abbo-manage-card { padding: 36px 20px; }
       .mode-toggle { gap: 2px; }
       .mode-btn { font-size: 0.78em; padding: 8px 10px; }
@@ -911,18 +924,31 @@
     function setMode(mode) {
       currentMode = mode;
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+
+      // Clear form and results on mode switch
+      document.getElementById('menuInput').value = '';
+      document.getElementById('locationInput').value = '';
+      uploadedPhotos = [];
+      renderPhotoPreview();
+      document.getElementById('resultContent').classList.add('hidden');
+      document.getElementById('resultEmpty').style.display = 'block';
+
+      const budgetWrap = document.querySelector('.budget-slider-wrap');
+
       if (mode === 'wine-to-food') {
         document.getElementById('menuLabel').textContent = 'Descrivi il vino che hai *';
         document.getElementById('menuInput').placeholder = 'Es: Barolo Marchesi di Barolo 2019, Chianti Classico Riserva...';
         document.getElementById('locationLabel').textContent = 'Occasione o tipo di pasto (opzionale)';
         document.getElementById('locationInput').placeholder = 'Es: cena romantica, pranzo domenicale, aperitivo...';
         document.getElementById('recommendBtn').textContent = 'Suggerisci abbinamenti';
+        budgetWrap.style.display = 'none';
       } else {
         document.getElementById('menuLabel').textContent = 'Cosa mangi stasera? *';
         document.getElementById('menuInput').placeholder = 'Es: risotto ai funghi porcini, filetto di manzo al tartufo, tiramisù...';
         document.getElementById('locationLabel').textContent = 'La tua città o regione';
         document.getElementById('locationInput').placeholder = 'Es: Milano, Toscana, Roma...';
         document.getElementById('recommendBtn').textContent = 'Consigliami un vino';
+        budgetWrap.style.display = '';
       }
     }
 
@@ -1104,6 +1130,7 @@
       const html = marked.parse(item.recommendation || '');
       const card = document.getElementById('recommendationCard');
       card.innerHTML = html;
+      insertWineDividers(card);
       if (typeof twemoji !== 'undefined') twemoji.parse(card, { folder: 'svg', ext: '.svg' });
       document.getElementById('menuInput').value = item.menu;
       setMode(item.mode || 'food-to-wine');
@@ -1116,6 +1143,20 @@
       if (!confirm('Cancellare tutta la cronologia?')) return;
       localStorage.removeItem(HISTORY_KEY);
       renderHistory();
+    }
+
+    // ── Wine section dividers ──────────────────────────
+    function insertWineDividers(card) {
+      card.querySelectorAll('h2').forEach((h2, i) => {
+        if (i === 0) return;
+        const div = document.createElement('div');
+        div.className = 'wine-divider';
+        div.innerHTML = `<svg viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,14 C60,4 110,24 200,14 C290,4 330,22 420,14 C510,4 560,24 640,14 C720,4 770,22 800,14"
+                fill="none" stroke="rgba(178,34,34,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>`;
+        h2.parentNode.insertBefore(div, h2);
+      });
     }
 
     // ── Copy recommendation ────────────────────────────
@@ -1331,6 +1372,7 @@
         const html = marked.parse(data.recommendation || '');
         const card = document.getElementById('recommendationCard');
         card.innerHTML = html;
+        insertWineDividers(card);
         if (typeof twemoji !== 'undefined') {
           twemoji.parse(card, { folder: 'svg', ext: '.svg' });
         }
